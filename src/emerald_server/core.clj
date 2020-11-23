@@ -5,7 +5,9 @@
             [compojure.core :as c]
             [compojure.handler :as handler]
             [emerald-server.handler.cbb-data :as cbb-data]
+            [emerald-server.handler.character-data :as character-data]
             [ring.adapter.jetty :as server]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]))
 
 (def port 3000)
@@ -23,11 +25,14 @@
 
 (def app
   (-> (c/routes
+       character-data/character-data-routes
        cbb-data/cbb-data-routes)
       handler/site
       wrap-kebab-case-keys
       wrap-json-body
-      wrap-json-response))
+      wrap-json-response
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :put :post :delete])))
 
 ;;; Server
 
