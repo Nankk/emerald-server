@@ -52,4 +52,5 @@
     (stop-server)
     (start-server)))
 
-(restart-server)
+(defn -main []
+  (start-server))
