@@ -5,7 +5,7 @@
    :age       29
    :gender    :male
    :species   "人間"
-   :role      "戦士"
+   :job       "戦士"
    :parameter {:base    {:physical 10 :talent 7 :mental 4}
                :initial {:dex 11 :agi 5 :str 7 :con 7 :int 4 :pow 4}
                :growth  {:dex 0 :agi 0 :str 0 :con 0 :int 0 :pow 0}}

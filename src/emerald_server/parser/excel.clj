@@ -1,8 +1,7 @@
 ;;; https://www.spantree.net/blog/2015/03/06/clojure-read-spreadsheet.html
 
 (ns emerald-server.parser.excel
-  (:require [clojure.walk :as walk]
-            [dk.ative.docjure.spreadsheet :as sp]))
+  (:require [dk.ative.docjure.spreadsheet :as sp]))
 
 (defn- read-sheet [sht]
   (let [rows      (sp/row-seq sht)
@@ -16,4 +15,4 @@
         shts      (sp/sheet-seq wb)
         sht-names (for [sht shts] (sp/sheet-name sht))
         sht-data  (for [sht shts] (read-sheet sht))]
-    (walk/keywordize-keys (zipmap sht-names sht-data))))
+    (zipmap sht-names sht-data)))

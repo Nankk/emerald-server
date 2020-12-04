@@ -1,56 +1,60 @@
 (ns emerald-server.core
   (:gen-class)
-  (:require [camel-snake-kebab.core :refer [->kebab-case-keyword ->snake_case]]
-            [camel-snake-kebab.extras :refer [transform-keys]]
-            [compojure.core :as c]
-            [compojure.handler :as handler]
+  (:require [reitit.ring :as ring]
+            [reitit.coercion.spec]
+            [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
+            [reitit.ring.coercion :as coercion]
+            [reitit.dev.pretty :as pretty]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring.middleware.exception :as exception]
+            [reitit.ring.middleware.multipart :as multipart]
+            [reitit.ring.middleware.parameters :as parameters]
+            [ring.adapter.jetty :as jetty]
+            [muuntaja.core :as m]
             [emerald-server.handler.cbb-data :as cbb-data]
             [emerald-server.handler.character-data :as character-data]
-            [ring.adapter.jetty :as server]
-            [ring.middleware.cors :refer [wrap-cors]]
-            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]))
+            [ring.middleware.cors :refer [wrap-cors]]))
+
+;; App
+
+(def app
+  (ring/ring-handler
+   (ring/router
+    [["/swagger.json"
+      {:get {:no-doc  true
+             :swagger {:info {:title "my-api"}}
+             :handler (swagger/create-swagger-handler)}}]
+     character-data/character-data-routes
+     cbb-data/cbb-data-routes]
+    {:exception pretty/exception
+     :data      {:coercion   reitit.coercion.spec/coercion
+                 :muuntaja   m/instance
+                 :middleware [swagger/swagger-feature
+                              parameters/parameters-middleware
+                              muuntaja/format-negotiate-middleware
+                              muuntaja/format-response-middleware
+                              exception/exception-middleware
+                              muuntaja/format-request-middleware
+                              coercion/coerce-response-middleware
+                              coercion/coerce-request-middleware
+                              multipart/multipart-middleware
+                              #(wrap-cors % :access-control-allow-origin [#".*"]
+                                          :access-control-allow-methods [:get :put :post :delete])]}})
+   (ring/routes
+    (swagger-ui/create-swagger-ui-handler
+     {:path   "/"
+      :config {:validatorUrl     nil
+               :operationsSorter "alpha"}})
+    (ring/create-default-handler))))
+
+;; Server
 
 (def port 3000)
 
-;;; Middlewares
+(defn start []
+  (jetty/run-jetty #'app {:port port, :join? false})
+  (println "server running in port 3000"))
 
-(defn wrap-kebab-case-keys [handler]
-  (fn [request]
-    (let [response  (->> request
-                         (transform-keys #(->kebab-case-keyword % :separator \_) ,,)
-                         handler)]
-      (transform-keys #(->snake_case % :separator \-) response))))
-
-;;; App
-
-(def app
-  (-> (c/routes
-       character-data/character-data-routes
-       cbb-data/cbb-data-routes)
-      handler/site
-      wrap-kebab-case-keys
-      wrap-json-body
-      wrap-json-response
-      (wrap-cors :access-control-allow-origin [#".*"]
-                 :access-control-allow-methods [:get :put :post :delete])))
-
-;;; Server
-
-(defonce server (atom nil))
-
-(defn start-server []
-  (when-not @server
-    (reset! server (server/run-jetty #'app {:port port :join? false}))))
-
-(defn stop-server []
-  (when @server
-    (.stop @server)
-    (reset! server nil)))
-
-(defn restart-server []
-  (when @server
-    (stop-server)
-    (start-server)))
-
-(defn -main []
-  (start-server))
+(comment
+  (start))
