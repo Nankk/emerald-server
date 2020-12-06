@@ -13,13 +13,16 @@
     born-data))
 
 (defn- arrange-subtables [data]
-  (w/postwalk
-   #(if (and (map? %) (% "sub-table"))
-      (let [sub-key  (% "sub-table")
-            sub-data (data sub-key)]
-        (-> % (dissoc ,, "sub-table") (assoc ,, sub-key sub-data)))
-      %)
-   data))
+  (let [*sub-tables (atom #{})
+        included    (w/postwalk
+                     #(if (and (map? %) (% "sub-table"))
+                        (let [sub-key  (% "sub-table")
+                              sub-data (data sub-key)]
+                          (swap! *sub-tables conj ,, sub-key)
+                          (-> % (dissoc ,, "sub-table") (assoc ,, sub-key sub-data)))
+                        %)
+                     data)]
+    (apply dissoc included @*sub-tables)))
 
 (defn- arrange-redirects [data]
   (let [*destinations (atom #{})
