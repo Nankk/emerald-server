@@ -67,7 +67,8 @@
 ;; Character
 ;; (s/def ::character (s/keys :req-un [::first]))
 (s/def ::character (s/keys :req-un [::name ::age ::gender ::species ::job
-                                    ::parameters ::abilities ::skills ::languages ::nature]))
+                                    ::parameters ::abilities ::skills ::languages]
+                           :opt-un [::nature]))
 
 ;;; Characters ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
