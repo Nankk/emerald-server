@@ -42,7 +42,7 @@
 ;; Routes
 
 (def cbb-categories
-  ["born" "infancy" "childhood" "adolescence" "happening" "name"])
+  ["born" "infancy" "childhood" "adolescence" "happening" "name" "departure-reason"])
 
 (def cbb-data-routes
   (into ["/cbb" {:swagger {:tags ["cbb"]}}]
