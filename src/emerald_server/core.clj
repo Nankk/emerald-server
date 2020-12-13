@@ -23,7 +23,7 @@
    (ring/router
     [["/swagger.json"
       {:get {:no-doc  true
-             :swagger {:info {:title "my-api"}}
+             :swagger {:info {:title "sword-world-api-docs"}}
              :handler (swagger/create-swagger-handler)}}]
      character-data/character-data-routes
      cbb-data/cbb-data-routes]
