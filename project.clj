@@ -6,7 +6,8 @@
                  [duratom "0.5.2"]
                  [org.clojure/java.jdbc "0.7.11"]
                  [org.postgresql/postgresql "9.4-1206-jdbc42"]
-                 [metosin/reitit "0.5.10"]]
+                 [metosin/reitit "0.5.10"]
+                 [org.clojure/data.codec "0.1.1"]]
   :resource-paths ["resources"]
   :main ^:skip-aot emerald-server.core
   :target-path "target/%s"
