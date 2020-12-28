@@ -85,8 +85,10 @@
 (defn characters-summary [_]
   (println "characters-summary")
   (let [summary (for [[k v] @*characters
-                      :let  [{:keys [uuid data]} (deref v)]]
-                  (merge {:uuid uuid :idx k} (select-keys data [:name :age :job :species :image])))]
+                      :let  [{:keys [uuid data]} (deref v)
+                             {{:keys [name age species]} :personality
+                              {:keys [image]}            :options} data]]
+                  (merge {:uuid uuid :idx k} {:name name :age age :species species :image image}))]
     {:status 200 :body summary}))
 
 (defn character-show [{{:keys [id]} :path-params}]
@@ -127,7 +129,7 @@
 (def character-data-routes
   ["/characters"
    {:swagger {:tags ["characters"]}}
-   ["/"
+   [""
     {:get {:summary   "Returns all characters."
            :responses {200 {:body ::characters}}
            :handler   characters-show}
@@ -139,23 +141,24 @@
     {:get {:summary   "Returns all characters' summary list."
            :responses {200 {:body ::characters-summary}}
            :handler   characters-summary}}]
-   ["/id/:id"
-    {:get {:summary   "Returns a character specified by id."
-           :parameters {:path {:id ::id}}
-           :responses {200 {:body ::character}}
-           :handler   character-show}
-     :put {:summary   "Update a character specified by id."
-           :parameters {:path {:id ::id}
-                        :body ::character}
-           :responses {200 {:body (s/keys :req-un [::message])}
-                       400 {:body (s/keys :req-un [::errors])}}
-           :handler   character-update}
-     :delete {:summary   "Delete a character specified by id."
-              :parameters {:path {:id ::id}}
-              :responses {200 {:body (s/keys :req-un [::message])}
-                          400 {:body (s/keys :req-un [::errors])}}
-              :handler   character-delete}}]
-   ["/id/:id/image"
-    {:get {:summary "Downloads a profile image file."
-           :parameters {:path {:id ::id}}
-           :handler character-image-show}}]])
+   ["/:id"
+    [""
+     {:get {:summary   "Returns a character specified by id."
+            :parameters {:path {:id ::id}}
+            :responses {200 {:body ::character}}
+            :handler   character-show}
+      :put {:summary   "Update a character specified by id."
+            :parameters {:path {:id ::id}
+                         :body ::character}
+            :responses {200 {:body (s/keys :req-un [::message])}
+                        400 {:body (s/keys :req-un [::errors])}}
+            :handler   character-update}
+      :delete {:summary   "Delete a character specified by id."
+               :parameters {:path {:id ::id}}
+               :responses {200 {:body (s/keys :req-un [::message])}
+                           400 {:body (s/keys :req-un [::errors])}}
+               :handler   character-delete}}]
+    ["/image"
+     {:get {:summary "Downloads a profile image file."
+            :parameters {:path {:id ::id}}
+            :handler character-image-show}}]]])

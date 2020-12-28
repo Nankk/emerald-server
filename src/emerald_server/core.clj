@@ -27,7 +27,8 @@
              :handler (swagger/create-swagger-handler)}}]
      character-data/character-data-routes
      cbb-data/cbb-data-routes]
-    {:exception pretty/exception
+    {:conflicts nil
+     :exception pretty/exception
      :data      {:coercion   reitit.coercion.spec/coercion
                  :muuntaja   m/instance
                  :middleware [swagger/swagger-feature
@@ -53,7 +54,7 @@
 (def port 3000)
 
 (defn start []
-  (jetty/run-jetty #'app {:port port, :join? false})
+  (jetty/run-jetty #'app {:port port :join? false})
   (println "server running in port 3000"))
 
 (comment
