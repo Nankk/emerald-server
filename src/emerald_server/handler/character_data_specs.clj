@@ -186,10 +186,9 @@
                              :opt-un [::options]))
   (s/def ::character-summary (s/keys :req-un [::uuid
                                               ::idx
-                                              ::name
-                                              ::age
-                                              ::job
-                                              ::species]
+                                              :personality/name
+                                              :personality/age
+                                              :personality/species]
                                      :opt-un [::image])))
 
 ;;; Characters ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
