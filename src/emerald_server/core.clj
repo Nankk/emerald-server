@@ -55,7 +55,10 @@
 
 (defn start []
   (jetty/run-jetty #'app {:port port :join? false})
-  (println "server running in port 3000"))
+  (println "server running in port " port))
+
+(defn -main [& args]
+  (start))
 
 (comment
   (start))
