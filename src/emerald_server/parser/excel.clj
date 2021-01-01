@@ -10,8 +10,8 @@
                                   (for [c (sp/cell-seq r)]
                                     (sp/read-cell c))))))
 
-(defn read-workbook [path]
-  (let [wb        (sp/load-workbook path)
+(defn read-workbook-from-resource [path]
+  (let [wb        (sp/load-workbook-from-resource path)
         shts      (sp/sheet-seq wb)
         sht-names (for [sht shts] (sp/sheet-name sht))
         sht-data  (for [sht shts] (read-sheet sht))]

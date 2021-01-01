@@ -8,8 +8,8 @@
 
 (defn- read-data [book-name]
   (println book-name)
-  (let [path      (.getPath (io/resource (str "data/cbb/" book-name ".xlsx")))
-        born-data (excel-parser/read-workbook path)]
+  (let [path      (str "data/cbb/" book-name ".xlsx")
+        born-data (excel-parser/read-workbook-from-resource path)]
     born-data))
 
 (defn- arrange-subtables [data]
