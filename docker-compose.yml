@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+    db:
+        image: postgres:10-alpine
+        container_name: postgres
+        ports:
+            - "55432:5432"
+        environment:
+            - POSTGRES_USER=test
+            - POSTGRES_PASSWORD=test
+            - PGPASSWORD=test
+            - POSTGRES_DB=mydb
+            - DATABASE_HOST=localhost
+    server:
+        image: nankk/emerald-server
+        container_name: emerald-server
+        ports:
+            - 53000:3000
+        restart: always
+        # command: sh ./wait.sh db java -jar emerald-server-0.1.0-SNAPSHOT-standalone.jar db-host db db-port 5432
+        command: java -jar emerald-server-0.1.0-SNAPSHOT-standalone.jar db-host db db-port 5432
+        # networks:
+        #     default:
+        #         driver: bridge

@@ -57,7 +57,10 @@
   (jetty/run-jetty #'app {:port port :join? false})
   (println "server running in port " port))
 
-(defn -main [& args]
+(defn -main [& {:strs [db-host db-port]
+                :or   {db-host "localhost" db-port 5432}}]
+  (println "db-host: " db-host ", db-port: " db-port)
+  (character-data/init-duratom-bindings db-host db-port)
   (start))
 
 (comment

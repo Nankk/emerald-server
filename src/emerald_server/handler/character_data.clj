@@ -5,17 +5,36 @@
             [spec-tools.spec :as spec]
             [clojure.data.codec.base64 :as b64-codec]
             [emerald-server.handler.duratom
-             :refer
-             [bind-duratom create-character-duratom]]
-            [clojure.java.io :as io]))
+             :refer [bind-duratom create-character-duratom]
+             :as    emerald.duratom]
+            [clojure.java.io :as io]
+            [clojure.java.jdbc :as sql]))
 
 (load "character_data_specs")
 
-(defonce *uuid->rowidx (bind-duratom 0)) ; **Row index 0 is dedicated for binding information**
-(defonce *characters
-  (atom (into {} (for [rowidx (vals @*uuid->rowidx)] [rowidx (bind-duratom rowidx)])))
-  #_{1 character-data1!
-     2 character-data2!})
+(declare *uuid->rowidx)
+(declare *characters)
+
+(defn init-duratom-bindings
+  [db-host db-port]
+  ;; TODO Do something to this insanely dirty point
+  (reset! emerald.duratom/*db-config (str "postgresql://test:test@" db-host ":" db-port "/mydb"))
+  ;; Check connection
+  (loop [retry 0]
+    (if (< retry 10)
+      (let [db (try (sql/get-connection @emerald.duratom/*db-config) (catch Exception _ false))]
+        (if db
+          (.close db)
+          (do (println "Connection " @emerald.duratom/*db-config " failed. Retrying...")
+              (Thread/sleep 5000)
+              (recur (inc retry)))))
+      (throw (Exception. (str "Failed to connect to " @emerald.duratom/*db-config " after " retry " retrying.")))))
+  ;; Duratom binding
+  (def *uuid->rowidx (bind-duratom 0)) ; **Row index 0 is dedicated for binding information**
+  (def *characters
+    (atom (into {} (for [rowidx (vals @*uuid->rowidx)] [rowidx (bind-duratom rowidx)])))
+    #_{1 character-data1!
+       2 character-data2!}))
 
 (defn- rowidx->uuid [idx]
   (when-let [character (@*characters idx)]
