@@ -64,4 +64,4 @@
   (start))
 
 (comment
-  (start))
+  (-main))
