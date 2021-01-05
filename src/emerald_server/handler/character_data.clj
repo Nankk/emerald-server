@@ -107,7 +107,9 @@
                       :let  [{:keys [uuid data]} (deref v)
                              {{:keys [name age species]} :personality
                               {:keys [image]}            :options} data]]
-                  (merge {:uuid uuid :idx k} {:name name :age age :species species :image image}))]
+                  (into {} (remove (comp nil? second)
+                                   (merge {:uuid uuid :idx k}
+                                          {:name name :age age :species species :image image}))))]
     {:status 200 :body summary}))
 
 (defn character-show [{{:keys [id]} :path-params}]
