@@ -4,11 +4,12 @@
             [clojure.spec.alpha :as s]
             [spec-tools.spec :as spec]
             [clojure.data.codec.base64 :as b64-codec]
+            [clojure.java.io :as io]
             [emerald-server.handler.duratom
              :refer [bind-duratom create-character-duratom]
              :as    emerald.duratom]
-            [clojure.java.io :as io]
-            [clojure.java.jdbc :as sql]))
+            [clojure.java.jdbc :as sql]
+            [environ.core :refer [env]]))
 
 (load "character_data_specs")
 
@@ -68,24 +69,28 @@
   (println "add-character")
   (let [rowidx (next-row-available *characters)
         data!  (create-character-duratom uuid rowidx
-                                         (if (get-in character [:image :base64])
-                                           (update character :image dissoc :base64)
+                                         (if (get-in character [:options :image :base64])
+                                           (update-in character [:options :image] dissoc :base64)
                                            character))]
     (swap! *uuid->rowidx #(assoc % uuid rowidx))
     (swap! *characters #(assoc % rowidx data!))
     {:uuid uuid :idx rowidx}))
 
-(defn save-image [{{:keys [base64 extension]} :image} uuid]
+(def local-dir (str (env :home) "/.emerald"))
+
+(defn save-image [{{{:keys [base64 extension]} :image} :options} uuid]
   (println "save-image")
   (when (and base64 extension)
     (println "saving image..." base64 extension)
-    (io/copy (b64-codec/decode (.getBytes base64))
-             (java.io.File. (str (.getPath (io/resource (str "img/profile"))) "/" uuid "." extension)))))
+    (let [file-path (str local-dir "/img/profile/" uuid "." extension)]
+      (io/make-parents file-path)
+      (io/copy (b64-codec/decode (.getBytes base64))
+               (io/file file-path)))))
 
 (defn delete-character [uuid rowidx]
   (let [extension (get-in (deref (@*characters rowidx)) [:data :image :extension])]
     (when extension
-      (io/delete-file (str (.getPath (io/resource (str "img/profile"))) "/" uuid "." extension) true))
+      (io/delete-file (str local-dir "/img/profile/" uuid "." extension) true))
     (destroy (bind-duratom rowidx))
     (swap! *characters #(dissoc % rowidx))
     (swap! *uuid->rowidx #(dissoc % uuid))))
@@ -139,8 +144,8 @@
 (defn character-image-show [{{:keys [id]} :path-params}]
   (println "character-image-show")
   (let [[uuid rowidx] (uuid-and-rowidx id)
-        extension (get-in (deref (@*characters rowidx)) [:data :image :extension])
-        file (io/resource (str "img/profile/" uuid "." extension))]
+        extension (get-in (deref (@*characters rowidx)) [:data :options :image :extension])
+        file (io/file (str local-dir "/img/profile/" uuid "." extension))]
     {:status 200
      :headers {"Content-Type" (str "image/" extension)}
      :body (io/input-stream file)}))
