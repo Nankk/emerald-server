@@ -32,6 +32,8 @@
                                         :personality/species])))
 
 (do ;; Status
+  (s/def :status/hp spec/nat-int?)
+  (s/def :status/mp spec/nat-int?)
   (s/def :status/exp spec/nat-int?)
   (s/def :status/honor spec/nat-int?)
   (s/def :status.buffs.buff/target spec/string?)
@@ -39,7 +41,9 @@
   (s/def :status.buffs/buff (s/keys :req-un [:status.buffs.buff/target
                                              :status.buffs.buff/value]))
   (s/def :status/buffs (s/coll-of :status.buffs/buff))
-  (s/def ::status (s/keys :req-un [:status/exp
+  (s/def ::status (s/keys :req-un [:status/hp
+                                   :status/mp
+                                   :status/exp
                                    :status/honor]
                           :opt-un [:status/buffs])))
 
