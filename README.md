@@ -1,3 +1,11 @@
+# イメージのビルド
+
+```sh
+git clone https://gitlab.com/q-portal/sword-world-tools/emerald-server.git
+cd emerald-server
+docker build . -t nankk/emerald-server
+```
+
 # 実行
 
 リポジトリをクローンするか `docker-compose.yml` をダウンロードし、 `docker-compose.yml` のあるディレクトリで以下を実行してください。
