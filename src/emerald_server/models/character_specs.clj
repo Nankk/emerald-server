@@ -1,4 +1,4 @@
-(in-ns 'emerald-server.handler.character-data)
+(in-ns 'emerald-server.models.character)
 (require '[clojure.spec.alpha :as s]
          '[spec-tools.spec :as spec])
 
@@ -31,9 +31,9 @@
                                         :personality/gender
                                         :personality/species])))
 
-(do ;; Status
-  (s/def :status/hp spec/nat-int?)
-  (s/def :status/mp spec/nat-int?)
+(do ;; Status (core & full-specification)
+  (s/def :status/hp spec/int?)
+  (s/def :status/mp spec/int?)
   (s/def :status/exp spec/nat-int?)
   (s/def :status/honor spec/nat-int?)
   (s/def :status.buffs.buff/target spec/string?)
@@ -41,13 +41,26 @@
   (s/def :status.buffs/buff (s/keys :req-un [:status.buffs.buff/target
                                              :status.buffs.buff/value]))
   (s/def :status/buffs (s/coll-of :status.buffs/buff))
-  (s/def ::status (s/keys :req-un [:status/hp
-                                   :status/mp
-                                   :status/exp
-                                   :status/honor]
-                          :opt-un [:status/buffs])))
 
-(do ;; Parameters
+  ;; Core
+  (s/def :status.core/status (s/keys :req-un [:status/exp
+                                              :status/honor]
+                                     ;; hp & mp might not be post when created
+                                     :opt-un [:status/hp
+                                              :status/mp
+                                              :status/buffs]))
+
+  ;; Full
+  (s/def :status/level spec/pos-int?)
+  (s/def :status/max-hp spec/pos-int?)
+  (s/def :status/max-mp spec/pos-int?)
+  (s/def :status.secondary/status (s/keys :req-un [:status/level
+                                                   :status/max-hp
+                                                   :status/max-mp]))
+  (s/def ::status (s/merge :status.core/status
+                           :status.secondary/status)))
+
+(do ;; Parameters (core & full-specification)
   (s/def :parameters.base/physique spec/nat-int?)
   (s/def :parameters.base/technique spec/nat-int?)
   (s/def :parameters.base/mind spec/nat-int?)
@@ -60,21 +73,77 @@
   (s/def :parameters/con spec/nat-int?)
   (s/def :parameters/int spec/nat-int?)
   (s/def :parameters/pow spec/nat-int?)
-  (s/def :parameters/initial (s/keys :req-un [:parameters/dex
-                                              :parameters/agi
-                                              :parameters/str
-                                              :parameters/con
-                                              :parameters/int
-                                              :parameters/pow]))
-  (s/def :parameters/growth (s/keys :req-un [:parameters/dex
-                                             :parameters/agi
-                                             :parameters/str
-                                             :parameters/con
-                                             :parameters/int
-                                             :parameters/pow]))
-  (s/def ::parameters (s/keys :req-un [:parameters/base
-                                       :parameters/initial]
-                              :opt-un [:parameters/growth])))
+  (s/def :parameters/initial (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
+                                              :parameters/con :parameters/int :parameters/pow]))
+  (s/def :parameters/growth (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
+                                             :parameters/con :parameters/int :parameters/pow]))
+
+  ;; Core
+  (s/def :parameters.core/parameters (s/keys :req-un [:parameters/base
+                                                      :parameters/initial]
+                                             :opt-un [:parameters/growth]))
+
+  ;; Full
+  (s/def :parameters/total (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
+                                            :parameters/con :parameters/int :parameters/pow]))
+  (s/def :parameters/bonus (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
+                                            :parameters/con :parameters/int :parameters/pow]))
+  (s/def :parameters.secondary/parameters (s/keys :req-un [:parameters/total :parameters/bonus]))
+  (s/def ::parameters (s/merge :parameters.core/parameters
+                               :parameters.secondary/parameters)))
+
+(do ;; Reference values (full-specification only)
+  (s/def :reference-values/damage-bonus spec/nat-int?)
+  (s/def :reference-values/defence spec/nat-int?)
+  (s/def :reference-values.resistance/con spec/nat-int?)
+  (s/def :reference-values.resistance/pow spec/nat-int?)
+  (s/def :reference-values/resistance (s/keys :req-un [:reference-values.resistance/con
+                                                       :reference-values.resistance/pow]))
+  (s/def :reference-values/hit spec/nat-int?)
+  (s/def :reference-values/dodge spec/nat-int?)
+  (s/def :reference-values.magical-power/sorcerer spec/nat-int?)
+  (s/def :reference-values.magical-power/conjurer spec/nat-int?)
+  (s/def :reference-values.magical-power/priest spec/nat-int?)
+  (s/def :reference-values.magical-power/fairy-tamer spec/nat-int?)
+  (s/def :reference-values.magical-power/magitech spec/nat-int?)
+  (s/def :reference-values.magical-power/demon-ruler spec/nat-int?)
+  (s/def :reference-values.magical-power/druid spec/nat-int?)
+  (s/def :reference-values.magical-power/grimoire spec/nat-int?)
+  (s/def :reference-values/magical-power (s/keys :opt-un [:reference-values.magical-power/sorcerer
+                                                          :reference-values.magical-power/conjurer
+                                                          :reference-values.magical-power/priest
+                                                          :reference-values.magical-power/fairy-tamer
+                                                          :reference-values.magical-power/magitech
+                                                          :reference-values.magical-power/demon-ruler
+                                                          :reference-values.magical-power/druid
+                                                          :reference-values.magical-power/grimoire]))
+  (s/def :reference-values.mobility/limited spec/pos-int?)
+  (s/def :reference-values.mobility/normal spec/pos-int?)
+  (s/def :reference-values.mobility/full-power spec/pos-int?)
+  (s/def :reference-values/mobility (s/keys :req-un [:reference-values.mobility/limited
+                                                     :reference-values.mobility/normal
+                                                     :reference-values.mobility/full-power]))
+  (s/def :reference-values.packages/dex spec/nat-int?)
+  (s/def :reference-values.packages/agi spec/nat-int?)
+  (s/def :reference-values.packages/int spec/nat-int?)
+  (s/def :reference-values.packages/scout (s/keys :req-un [:reference-values.packages/dex
+                                                           :reference-values.packages/agi
+                                                           :reference-values.packages/int]))
+  (s/def :reference-values.packages/ranger (s/keys :req-un [:reference-values.packages/dex
+                                                            :reference-values.packages/agi
+                                                            :reference-values.packages/int]))
+  (s/def :reference-values.packages/sage (s/keys :req-un [:reference-values.packages/int]))
+  (s/def :reference-values/packages (s/keys :req-un [:reference-values.packages/scout
+                                                     :reference-values.packages/ranger
+                                                     :reference-values.packages/sage]))
+  (s/def ::reference-values (s/keys :req-un [:reference-values/damage-bonus
+                                             :reference-values/defence
+                                             :reference-values/resistance
+                                             :reference-values/hit
+                                             :reference-values/dodge
+                                             :reference-values/magical-power
+                                             :reference-values/mobility
+                                             :reference-values/packages])))
 
 (do ;; Items
   (s/def :items.item/uuid spec/string?)
@@ -178,9 +247,26 @@
   (s/def ::options (s/keys :opt-un [::image ::notes ::nature])))
 
 (do ;; Character
+
+  ;; ::character-core only contains primary variables;
+  ;; no other information is needed for registration and update
+  (s/def :character.core/character (s/keys :req-un [::personality
+                                                    :status.core/status
+                                                    :parameters.core/parameters
+                                                    ::items
+                                                    ::equipments
+                                                    ::accessories
+                                                    ::languages
+                                                    ::abilities
+                                                    ::skills]
+                                           :opt-un [::options]))
+
+  ;; ::character is full specification of character;
+  ;; contains both primary and secondary variables
   (s/def ::character (s/keys :req-un [::personality
                                       ::status
                                       ::parameters
+                                      ::reference-values
                                       ::items
                                       ::equipments
                                       ::accessories
@@ -188,6 +274,9 @@
                                       ::abilities
                                       ::skills]
                              :opt-un [::options]))
+
+  ;; ::character-summary contains minimum info;
+  ;; provided e.g. for listing characters
   (s/def ::character-summary (s/keys :req-un [::uuid
                                               ::idx
                                               :personality/name

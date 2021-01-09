@@ -1,16 +1,17 @@
-(ns emerald-server.handler.cbb-data
-  (:require [clojure.java.io :as io]
-            [clojure.spec.alpha :as s]
+(ns emerald-server.db
+  (:require [emerald-server.parser.excel :as excel-parser]
             [clojure.walk :as w]
-            [emerald-server.parser.excel :as excel-parser]
-            reitit.coercion.spec
-            [spec-tools.spec :as spec]))
+            [clojure.string :as str]))
 
-(defn- read-data [book-name]
-  (println book-name)
-  (let [path      (str "data/cbb/" book-name ".xlsx")
-        born-data (excel-parser/read-workbook-from-resource path)]
-    born-data))
+;; State
+
+(def *data (atom {}))
+
+(defn- read-data [book-relpos]
+  (println book-relpos)
+  (let [path      (str "data/" book-relpos ".xlsx")
+        data (excel-parser/read-workbook-from-resource path)]
+    data))
 
 (defn- arrange-subtables [data]
   (let [*sub-tables (atom #{})
@@ -39,19 +40,23 @@
                        data)]
     (apply dissoc redirected @*destinations)))
 
-;; Routes
+(def book-relposs
+  ["cbb/adolescence"
+   "cbb/born"
+   "cbb/childhood"
+   "cbb/departure-reason"
+   "cbb/happening"
+   "cbb/infancy"
+   "cbb/name"
+   "items"])
 
-(def cbb-categories
-  ["born" "infancy" "childhood" "adolescence" "happening" "name" "departure-reason"])
-
-(def cbb-data-routes
-  (into ["/cbb" {:swagger {:tags ["cbb"]}}]
-        (for [category cbb-categories]
-          [(str "/" category)
-           {:get {:summary    (str "Returns character " category " data from character building book.")
-                  :handler    (fn [_]
-                                {:status 200
-                                 :body   (-> (read-data category)
-                                             (arrange-subtables ,,)
-                                             (arrange-redirects ,,)
-                                             )})}}])))
+(defn load-all-data [& _]
+  (println "load-all-data")
+  (let [*raw (atom {})]
+    (doseq [relpos book-relposs]
+      (swap! *raw assoc-in ,,
+             (map keyword (str/split relpos #"/"))
+             (read-data relpos)))
+    (reset! *data (-> @*raw
+                      (arrange-subtables)
+                      (arrange-redirects)))))

@@ -1,19 +1,21 @@
 (ns emerald-server.core
   (:gen-class)
-  (:require [reitit.ring :as ring]
-            [reitit.coercion.spec]
-            [reitit.swagger :as swagger]
-            [reitit.swagger-ui :as swagger-ui]
-            [reitit.ring.coercion :as coercion]
+  (:require [emerald-server.db :as db]
+            [emerald-server.handler.cbb :as cbb]
+            [emerald-server.handler.characters :as characters]
+            [emerald-server.handler.items :as items]
+            [muuntaja.core :as m]
+            reitit.coercion.spec
             [reitit.dev.pretty :as pretty]
-            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring :as ring]
+            [reitit.ring.coercion :as coercion]
             [reitit.ring.middleware.exception :as exception]
             [reitit.ring.middleware.multipart :as multipart]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
+            [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
             [ring.adapter.jetty :as jetty]
-            [muuntaja.core :as m]
-            [emerald-server.handler.cbb-data :as cbb-data]
-            [emerald-server.handler.character-data :as character-data]
             [ring.middleware.cors :refer [wrap-cors]]))
 
 ;; App
@@ -25,8 +27,13 @@
       {:get {:no-doc  true
              :swagger {:info {:title "sword-world-api-docs"}}
              :handler (swagger/create-swagger-handler)}}]
-     character-data/character-data-routes
-     cbb-data/cbb-data-routes]
+     ["/"
+      ;; Only for development; reloads all data from xlsx files
+      ["reload-data" {:no-doc true
+                      :get db/load-all-data}]]
+     characters/characters-routes
+     cbb/cbb-routes
+     items/items-routes]
     {:conflicts nil
      :exception pretty/exception
      :data      {:coercion   reitit.coercion.spec/coercion
@@ -60,7 +67,8 @@
 (defn -main [& {:strs [db-host db-port]
                 :or   {db-host "localhost" db-port 5432}}]
   (println "db-host: " db-host ", db-port: " db-port)
-  (character-data/init-duratom-bindings db-host db-port)
+  (characters/init-duratom-bindings db-host db-port)
+  (db/load-all-data)
   (start))
 
 (comment

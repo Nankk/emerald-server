@@ -1,17 +1,17 @@
-(ns emerald-server.handler.character-data
-  (:require [clojure.pprint :as pp]
-            [duratom.core :refer [destroy]]
-            [clojure.spec.alpha :as s]
-            [spec-tools.spec :as spec]
-            [clojure.data.codec.base64 :as b64-codec]
+(ns emerald-server.handler.characters
+  (:require [clojure.data.codec.base64 :as b64-codec]
             [clojure.java.io :as io]
-            [emerald-server.handler.duratom
-             :refer [bind-duratom create-character-duratom]
-             :as    emerald.duratom]
             [clojure.java.jdbc :as sql]
+            [clojure.pprint :as pp]
+            [clojure.spec.alpha :as s]
+            [duratom.core :refer [destroy]]
+            [emerald-server.models.character :as character]
+            [emerald-server.handler.duratom
+             :as
+             emerald.duratom
+             :refer
+             [bind-duratom create-character-duratom]]
             [environ.core :refer [env]]))
-
-(load "character_data_specs")
 
 (declare *uuid->rowidx)
 (declare *characters)
@@ -152,39 +152,41 @@
 
 ;; Router ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def character-data-routes
+(def characters-routes
   ["/characters"
    {:swagger {:tags ["characters"]}}
    [""
     {:get {:summary   "Returns all characters."
-           :responses {200 {:body ::characters}}
+           :responses {200 {:body ::character/characters}}
            :handler   characters-show}
      :post {:summary   "Register a character and returns its id."
-            :parameters {:body ::character}
-            :responses {200 {:body (s/keys :req-un [::message ::uuid ::idx])}}
+            :parameters {:body :character.core/character}
+            :responses {200 {:body (s/keys :req-un [::character/message
+                                                    ::character/uuid
+                                                    ::character/idx])}}
             :handler   characters-add}}]
    ["/summary"
     {:get {:summary   "Returns all characters' summary list."
-           :responses {200 {:body ::characters-summary}}
+           :responses {200 {:body ::character/characters-summary}}
            :handler   characters-summary}}]
    ["/:id"
     [""
      {:get {:summary   "Returns a character specified by id."
-            :parameters {:path {:id ::id}}
-            :responses {200 {:body ::character}}
+            :parameters {:path {:id ::character/id}}
+            :responses {200 {:body ::character/character}}
             :handler   character-show}
       :put {:summary   "Update a character specified by id."
-            :parameters {:path {:id ::id}
-                         :body ::character}
-            :responses {200 {:body (s/keys :req-un [::message])}
-                        400 {:body (s/keys :req-un [::errors])}}
+            :parameters {:path {:id ::character/id}
+                         :body ::character/character}
+            :responses {200 {:body (s/keys :req-un [::character/message])}
+                        400 {:body (s/keys :req-un [::character/errors])}}
             :handler   character-update}
       :delete {:summary   "Delete a character specified by id."
-               :parameters {:path {:id ::id}}
-               :responses {200 {:body (s/keys :req-un [::message])}
-                           400 {:body (s/keys :req-un [::errors])}}
+               :parameters {:path {:id ::character/id}}
+               :responses {200 {:body (s/keys :req-un [::character/message])}
+                           400 {:body (s/keys :req-un [::character/errors])}}
                :handler   character-delete}}]
     ["/image"
      {:get {:summary "Downloads a profile image file."
-            :parameters {:path {:id ::id}}
+            :parameters {:path {:id ::character/id}}
             :handler character-image-show}}]]])
