@@ -8,6 +8,7 @@
                  [org.postgresql/postgresql "9.4-1206-jdbc42"]
                  [metosin/reitit "0.5.10"]
                  [org.clojure/data.codec "0.1.1"]
+                 [org.clojure/data.json "1.0.0"]
                  [environ "1.2.0"]]
   :plugins [[lein-environ "1.2.0"]]
   :resource-paths ["resources"]

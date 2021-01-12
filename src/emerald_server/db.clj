@@ -1,7 +1,8 @@
 (ns emerald-server.db
   (:require [emerald-server.parser.excel :as excel-parser]
-            [clojure.walk :as w]
-            [clojure.string :as str]))
+            [clojure.walk :as walk]
+            [clojure.string :as str]
+            [clojure.data.json :as json]))
 
 ;; State
 
@@ -13,9 +14,22 @@
         data (excel-parser/read-workbook-from-resource path)]
     data))
 
+(defn- parse-json-record [data]
+  (println "parse-json-record")
+  (walk/postwalk
+   (fn [x]
+     (if (and (map? x) (some #(re-find #"([A-z]+)-json" %) (keys x)))
+       (let [json-keys    (filter identity (map #(re-find #"([A-z]+)-json" %) (keys x)))
+             parsed-pairs (into {} (for [[cur-key new-key] json-keys]
+                                     [new-key (when-not (str/blank? (x cur-key))
+                                                (json/read-str (x cur-key)))]))]
+         (merge (apply dissoc x (map first json-keys)) parsed-pairs))
+       x))
+   data))
+
 (defn- arrange-subtables [data]
   (let [*sub-tables (atom #{})
-        included    (w/postwalk
+        included    (walk/postwalk
                      #(if (and (map? %) (% "sub-table"))
                         (let [sub-key  (% "sub-table")
                               sub-data (data sub-key)]
@@ -27,7 +41,7 @@
 
 (defn- arrange-redirects [data]
   (let [*destinations (atom #{})
-        redirected    (w/postwalk
+        redirected    (walk/postwalk
                        #(if (and (coll? %)
                                  (not-empty %)
                                  (map? (% 0))
@@ -52,11 +66,12 @@
 
 (defn load-all-data [& _]
   (println "load-all-data")
-  (let [*raw (atom {})]
+  (let [*all-books-data (atom {})]
     (doseq [relpos book-relposs]
-      (swap! *raw assoc-in ,,
+      (swap! *all-books-data assoc-in ,,
              (map keyword (str/split relpos #"/"))
-             (read-data relpos)))
-    (reset! *data (-> @*raw
-                      (arrange-subtables)
-                      (arrange-redirects)))))
+             (-> (read-data relpos)
+                 (parse-json-record)
+                 (arrange-subtables)
+                 (arrange-redirects))))
+    (reset! *data @*all-books-data)))
