@@ -31,16 +31,31 @@
                                         :personality/gender
                                         :personality/species])))
 
+(do ;; Buffs
+  (s/def :buffs.buff/target spec/string?)
+  (s/def :buffs.buff/value spec/nat-int?)
+  (s/def :buffs.buff/remaining-rounds spec/nat-int?)
+  (s/def :buffs.buff.attack-type/types #{"物理" "武器" "近接" "射撃" "魔法"
+                                         "地" "水・氷" "炎" "風" "雷" "純エネルギー" "断空" "衝撃"
+                                         "毒" "病気" "精神効果" "精神効果(弱)" "呪い"})
+  (s/def :buffs.buff/attack-type (s/coll-of :buffs.buff.attack-type/types))
+  (s/def :buffs.buff.valid-to/types #{"蛮族" "アンデッド"}) ; TODO Fill this
+  (s/def :buffs.buff/valid-to (s/coll-of :buffs.buff.valid-to/types))
+  (s/def :buffs.buff.when/occation #{"騎乗"}) ; TODO Fill this
+  (s/def :buffs.buff.when/and (s/coll-of :buffs.buff.when/occation))
+  (s/def :buffs.buff.when/or (s/coll-of :buffs.buff.when/occation))
+  (s/def :buffs.buff/when (s/keys :opt-un [:buffs.buff.when/and :buffs.buff.when/or]))
+  (s/def :buffs/buff (s/keys :req-un [:buffs.buff/target :buffs.buff/value]
+                             :opt-un [:buffs.buff/remaining-rounds :buffs.buff/attack-type
+                                      :buffs.buff/valid-to :buffs.buff/when]))
+  (s/def ::buffs (s/coll-of :buffs/buff))
+  (s/def ::buffs-summary (s/coll-of :buffs/buff)))
+
 (do ;; Status (core & full-specification)
   (s/def :status/hp spec/int?)
   (s/def :status/mp spec/int?)
   (s/def :status/exp spec/nat-int?)
   (s/def :status/honor spec/nat-int?)
-  (s/def :status.buffs.buff/target spec/string?)
-  (s/def :status.buffs.buff/value spec/int?)
-  (s/def :status.buffs/buff (s/keys :req-un [:status.buffs.buff/target
-                                             :status.buffs.buff/value]))
-  (s/def :status/buffs (s/coll-of :status.buffs/buff))
 
   ;; Core
   (s/def :status.core/status (s/keys :req-un [:status/exp
@@ -48,7 +63,7 @@
                                      ;; hp & mp might not be post when created
                                      :opt-un [:status/hp
                                               :status/mp
-                                              :status/buffs]))
+                                              ::buffs]))
 
   ;; Full
   (s/def :status/level spec/pos-int?)
@@ -94,7 +109,7 @@
 
 (do ;; Reference values (full-specification only)
   (s/def :reference-values/damage-bonus spec/nat-int?)
-  (s/def :reference-values/defence spec/nat-int?)
+  (s/def :reference-values/defense spec/nat-int?)
   (s/def :reference-values.resistance/con spec/nat-int?)
   (s/def :reference-values.resistance/pow spec/nat-int?)
   (s/def :reference-values/resistance (s/keys :req-un [:reference-values.resistance/con
@@ -137,7 +152,7 @@
                                                      :reference-values.packages/ranger
                                                      :reference-values.packages/sage]))
   (s/def ::reference-values (s/keys :req-un [:reference-values/damage-bonus
-                                             :reference-values/defence
+                                             :reference-values/defense
                                              :reference-values/resistance
                                              :reference-values/hit
                                              :reference-values/dodge
@@ -213,8 +228,7 @@
   (s/def :skills/enhancer     (s/coll-of spec/string?))
   (s/def :skills.bird/songs   (s/coll-of spec/string?))
   (s/def :skills.bird/finales (s/coll-of spec/string?))
-  (s/def :skills/bird         (s/keys :req-un [:skills.bird/songs
-                                               :skills.bird/finales]))
+  (s/def :skills/bird         (s/keys :req-un [:skills.bird/songs :skills.bird/finales]))
   (s/def :skills/rider        (s/coll-of spec/string?))
   (s/def :skills/alchemist    (s/coll-of spec/string?))
   (s/def :skills/war-leader   (s/coll-of spec/string?))
@@ -266,6 +280,7 @@
   (s/def ::character (s/keys :req-un [::personality
                                       ::status
                                       ::parameters
+                                      ::buffs-summary
                                       ::reference-values
                                       ::items
                                       ::equipments
