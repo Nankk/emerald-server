@@ -6,35 +6,24 @@
 
 (load "character_specs")
 
-(defn buff->keys [buff]
-  (case (buff :target)
-    :命中 [:reference-values :hit]
-    :回避 [:reference-values :dodge]
-    :知力 [:parameters :total :int]
-    :精神力 [:parameters :total :pow]
-    :器用度 [:parameters :total :dex]
-    :敏捷度 [:parameters :total :agi]
-    :筋力 [:parameters :total :str]
-    :生命力 [:parameters :total :con]
-    ))
-
-(defn apply-buffs [data buffs]
-  (for [buff buffs]
-    ()))
-
-(defn packages []
-  )
+;; When this process is slow, try:
+;; (def secondary-variable
+;;   (memoize
+;;    (fn [c key]
+(defn secondary-variable [c key]
+  (case key
+    :dex ))
 
 (defn full-parameters
-  "Returns full parameters set. Pass character core data."
-  [{:keys [base initial growth] :as params}]
-  (let [inherent (for [[k v] initial]
-                   (cond (or (= k :str) (= k :con)) {k (+ v (base :physique))}
-                         (or (= k :dex) (= k :agi)) {k (+ v (base :technique))}
-                         (or (= k :int) (= k :pow)) {k (+ v (base :mind))}))
-        total    (merge-with + inherent growth)
-        bonus    (walk/postwalk #(if (integer? %) (int (/ % 6)) %) total)]
-    (merge params total bonus)))
+"Returns full parameters set. Pass character core data."
+[{:keys [base initial growth] :as params}]
+(let [inherent (for [[k v] initial]
+                 (cond (or (= k :str) (= k :con)) {k (+ v (base :physique))}
+                       (or (= k :dex) (= k :agi)) {k (+ v (base :technique))}
+                       (or (= k :int) (= k :pow)) {k (+ v (base :mind))}))
+      total    (merge-with + inherent growth)
+      bonus    (walk/postwalk #(if (integer? %) (int (/ % 6)) %) total)]
+  (merge params total bonus)))
 
 (defn summarized-buffs [character keys-coll]
   (let [*gathered (atom [])]
