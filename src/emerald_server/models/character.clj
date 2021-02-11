@@ -8,13 +8,18 @@
 (load "character_specs")
 
 (defn char-buffs-summarized [char-core]
-  (let [buffs-summary (let [*gathered (atom [])]
-                        (doseq [k [:equipments :status]]
-                          (walk/postwalk
-                           #(when (and (map? %) (% :buffs))
-                              (swap! *gathered concat ,, (% :buffs)))
-                           (get char-core k)))
-                        @*gathered)]
+  (let [buffs-summary (vec (let [*gathered (atom [])]
+                             (doseq [k [:equipments :status]]
+                               (walk/postwalk
+                                #(do (when (and (map? %) (% :buffs)
+                                                ;; temporary buffs are not counted for refvals
+                                                (not (or (get-in % [:buffs :remaining-rounds])
+                                                         (get-in % [:buffs :valid-to])
+                                                         (get-in % [:buffs :when]))))
+                                       (swap! *gathered concat ,, (% :buffs)))
+                                     %)
+                                (get char-core k)))
+                             @*gathered))]
     (assoc char-core :buffs-summary buffs-summary)))
 
 (def buff-str->key
@@ -52,7 +57,8 @@
         max-mp           (+ (* 3 (ability/level-sum char-buffedparam :magician))
                             (get-in char-buffedparam [:parameters :total :pow]))
         status           {:level level :max-hp max-hp :max-mp max-mp :hp max-hp :mp max-mp}]
-    (update char-buffedparam :status #(merge % status))))
+    ;; Keep (merge status %) order: Don't overwrite the existing values
+    (update char-buffedparam :status #(merge status %))))
 
 (defn char-full-buffed
   "Generate reference values from characted data with buffed parameters."
@@ -61,30 +67,30 @@
      {:keys [dex agi str con pow int]} :bonus} :parameters
     buffs                                      :buffs-summary
     :as                                        char-buffedstatus}]
+  (println "char-full-buffed")
   (let [warrior-sum   (ability/level-sum char-buffedstatus :warrior)
         cqc-sum       (ability/level-sum char-buffedstatus :cqc)
         damage-bonus  (if-not (zero? warrior-sum) (+ warrior-sum str) 0)
-        defense       (reduce + (map :value (filter #(and (= (set (% :keys)) #{:target :value :attack-type})
+        defense       (reduce + (map :value (filter #(and (= (set (keys %)) #{:target :value :attack-type})
                                                           (= (% :target) "ダメージ軽減")
                                                           (= (% :attack-type) "物理")) buffs)))
         hit           (if-not (zero? warrior-sum) (+ (+ warrior-sum dex) (buff-sum buffs "命中")) 0)
         dodge         (if-not (zero? cqc-sum) (+ (+ cqc-sum agi) (buff-sum buffs "回避")) 0)
         resistance    {:con (+ (+ level con) (buff-sum buffs "生命抵抗"))
                        :pow (+ (+ level pow) (buff-sum buffs "精神抵抗"))}
-        _             (println resistance)
         magical-power (into {} (for [[k aname] ability/magical-key->str
                                      :let      [sum (ability/level-if char-buffedstatus aname)]
                                      :when     sum]
                                  [k (+ sum (buff-sum buffs "魔力"))]))
-        mobility      {:limited 3 :normal agi-total :full-power (* 3 agi-total)}
+        mobility      {:limited 3 :normal agi-total :sprint (* 3 agi-total)}
         packages      (->> (for [skill [:scout :ranger :sage]]
                              {skill
                               (->> (for [bonus [:dex :agi :int]
                                          :when (not (and (= skill :sage)
                                                          (or (= bonus :dex) (= bonus :agi))))]
-                                     (let [skill-level (ability/level-if char-buffedstatus ability/key->str)
+                                     (let [skill-level (ability/level-if char-buffedstatus (ability/key->str skill))
                                            bonus-value (case bonus :dex dex :agi agi :int int)]
-                                       [bonus (if (pos-int? skill-level) (+ skill bonus-value) 0)]))
+                                       [bonus (if (pos-int? skill-level) (+ skill-level bonus-value) 0)]))
                                    (into {} ,,))})
                            (into {} ,,))]
     (assoc char-buffedstatus :reference-values
@@ -106,12 +112,11 @@
                  (char-buffedparam)
                  (char-buffedstatus)
                  (char-full-buffed))]
-    (pprint/pprint full)
-    full))
+    (dissoc full :buffs-summary)))
 
 ;; Debug
 
 (comment
   (require '[emerald-server.handler.characters :as chandler])
-  (def char-debug (@(get @chandler/*characters 2) :data))
+  (def char-debug (@(get @chandler/*characters 1) :data))
   (character-full char-debug))

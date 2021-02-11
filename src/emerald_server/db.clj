@@ -54,6 +54,17 @@
                        data)]
     (apply dissoc redirected @*destinations)))
 
+(defn- remove-nil-values
+  "Dissocs keys binded by nil recursively."
+  [data]
+  (println "remove-nil-values")
+  (walk/postwalk
+   (fn [item]
+     (if (map? item)
+       (into {} (filter #(some? (second %)) item))
+       item))
+   data))
+
 (def book-relposs
   ["cbb/adolescence"
    "cbb/born"
@@ -73,5 +84,6 @@
              (-> (read-data relpos)
                  (parse-json-record)
                  (arrange-subtables)
-                 (arrange-redirects))))
+                 (arrange-redirects)
+                 (remove-nil-values))))
     (reset! *data @*all-books-data)))

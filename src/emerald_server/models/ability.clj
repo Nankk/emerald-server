@@ -84,7 +84,10 @@
   [character category]
   (reduce + (map :level (filter #(get-in abilities [(% :name) category]) (character :abilities)))))
 
-(defn level-if [character ability-name]
+(defn level-if
+  "Returns ability level of character specified by ability-name.
+  Returns nil if the character does not have it."
+  [character ability-name]
   (some-> (filter #(= (% :name) ability-name) (character :abilities))
           (first)
           (:level)))

@@ -98,7 +98,7 @@
 ;; Handlers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn characters-show [_]
-  {:status 200 :body (mapv #((deref %) :data) (vals @*characters))})
+  {:status 200 :body (mapv #(character/character-full ((deref %) :data)) (vals @*characters))})
 
 (defn characters-add [{{:keys [body]} :parameters}]
   (println "characters-add")
@@ -121,7 +121,7 @@
   (println "character-show")
   (println "id: " id)
   (let [[_ rowidx] (uuid-and-rowidx id)]
-    {:status 200 :body (@(@*characters rowidx) :data)}))
+    {:status 200 :body (character/character-full (@(@*characters rowidx) :data))}))
 
 (defn character-update [{{:keys [id]} :path-params {:keys [body]} :parameters}]
   (println "character-update")
@@ -177,7 +177,7 @@
             :handler   character-show}
       :put {:summary   "Update a character specified by id."
             :parameters {:path {:id ::character/id}
-                         :body ::character/character}
+                         :body :character.core/character}
             :responses {200 {:body (s/keys :req-un [::character/message])}
                         400 {:body (s/keys :req-un [::character/errors])}}
             :handler   character-update}

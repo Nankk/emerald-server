@@ -54,15 +54,18 @@
 (do ;; Status (core & full-specification)
   (s/def :status/hp spec/int?)
   (s/def :status/mp spec/int?)
+  (s/def :status/gamel spec/nat-int?)
+  ;; TODO total と free にして core と full にする…んだけど計算大変なので後回し
   (s/def :status/exp spec/nat-int?)
   (s/def :status/honor spec/nat-int?)
 
   ;; Core
-  (s/def :status.core/status (s/keys :req-un [:status/exp
-                                              :status/honor]
-                                     ;; hp & mp might not be post when created
-                                     :opt-un [:status/hp
+  ;; If posted with some values missing, default values must be set
+  (s/def :status.core/status (s/keys :opt-un [:status/hp
                                               :status/mp
+                                              :status/gamel
+                                              :status/exp
+                                              :status/honor
                                               ::buffs]))
 
   ;; Full
@@ -134,10 +137,10 @@
                                                           :reference-values.magical-power/grimoire]))
   (s/def :reference-values.mobility/limited spec/pos-int?)
   (s/def :reference-values.mobility/normal spec/pos-int?)
-  (s/def :reference-values.mobility/full-power spec/pos-int?)
+  (s/def :reference-values.mobility/sprint spec/pos-int?)
   (s/def :reference-values/mobility (s/keys :req-un [:reference-values.mobility/limited
                                                      :reference-values.mobility/normal
-                                                     :reference-values.mobility/full-power]))
+                                                     :reference-values.mobility/sprint]))
   (s/def :reference-values.packages/dex spec/nat-int?)
   (s/def :reference-values.packages/agi spec/nat-int?)
   (s/def :reference-values.packages/int spec/nat-int?)
@@ -172,13 +175,52 @@
 (do ;; Equipments
   (s/def :equipments/uuid spec/string?)
   (s/def :equipments/name spec/string?)
-  (s/def :equipments.weapons/weapon (s/keys :req-un [:equipments/uuid
-                                                     :equipments/name]))
+  (s/def :equipments/type spec/string?)
+  (s/def :equipments/hands #{"1H" "1H投" "1H#" "1H拳" "1H両" "2H" "振2H" "突2H"})
+  (s/def :equipments/category spec/string?)
+  (s/def :equipments/price spec/pos-int?)
+  (s/def :equipments/rank #{"B" "A" "S" "SS"})
+  (s/def :equipments/force spec/nat-int?)
+  (s/def :equipments/weight spec/pos-int?)
+  (s/def :equipments/critical spec/pos-int?)
+  (s/def :equipments/buffs spec/coll?)
+  (s/def :equipments/range spec/pos-int?)
+  (s/def :equipments/dedicated spec/string?)
+  (s/def :equipments/incompatible spec/string?)
+  (s/def :equipments/note spec/string?)
+  (s/def :equipments/reference spec/string?)
+  (s/def :equipments/not-implemented spec/boolean?)
+  (s/def :equipments.weapons/weapon (s/keys :req-un [:equipments/name
+                                                     :equipments/type
+                                                     :equipments/hands
+                                                     :equipments/category
+                                                     :equipments/rank
+                                                     :equipments/force
+                                                     :equipments/weight
+                                                     :equipments/critical]
+                                            :opt-un [:equipments/price
+                                                     :equipments/buffs
+                                                     :equipments/range
+                                                     :equipments/dedicated
+                                                     :equipments/incompatible
+                                                     :equipments/note
+                                                     :equipments/reference
+                                                     :equipments/not-implemented
+                                                     ]))
   (s/def :equipments/weapons (s/coll-of :equipments.weapons/weapon))
   (s/def :equipments/shield (s/keys :req-un [:equipments/uuid
                                              :equipments/name]))
-  (s/def :equipments/armor (s/keys :req-un [:equipments/uuid
-                                            :equipments/name]))
+  (s/def :equipments/armor (s/keys :req-un [:equipments/name
+                                            :equipments/category
+                                            :equipments/rank
+                                            :equipments/weight]
+                                   :opt-un [:equipments/price
+                                            :equipments/buffs
+                                            :equipments/dedicated
+                                            :equipments/incompatible
+                                            :equipments/note
+                                            :equipments/reference
+                                            :equipments/not-implemented]))
   (s/def ::equipments (s/keys :opt-un [:equipments/weapons
                                        :equipments/shield
                                        :equipments/armor])))
@@ -280,7 +322,6 @@
   (s/def ::character (s/keys :req-un [::personality
                                       ::status
                                       ::parameters
-                                      ::buffs-summary
                                       ::reference-values
                                       ::items
                                       ::equipments
