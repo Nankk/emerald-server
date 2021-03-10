@@ -283,8 +283,12 @@
   (s/def :image/base64 spec/string?)
   (s/def :image/size spec/pos-int?)
   (s/def :image/extension spec/string?)
+  (s/def :image/width spec/pos-int?)
+  (s/def :image/height spec/pos-int?)
   (s/def ::image (s/keys :req-un [:image/size
-                                  :image/extension]
+                                  :image/extension
+                                  :image/width
+                                  :image/height]
                          :opt-un [:image/base64]))
   (s/def :notes/title spec/string?)
   (s/def :notes/body spec/string?)
