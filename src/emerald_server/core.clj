@@ -16,21 +16,26 @@
             [reitit.swagger :as swagger]
             [reitit.swagger-ui :as swagger-ui]
             [ring.adapter.jetty :as jetty]
-            [ring.middleware.cors :refer [wrap-cors]]))
+            [ring.middleware.cors :refer [wrap-cors]]
+            [clojure.walk :as walk]))
+
+(defonce options (atom {:base-path "/"}))
 
 ;; App
 
-(def app
+;; If app is defined by `def`, `options` above will not be reflected
+(defn app []
   (ring/ring-handler
    (ring/router
     [["/swagger.json"
       {:get {:no-doc  true
-             :swagger {:info {:title "sword-world-api-docs"}}
+             :swagger {:info     {:title "sword-world-api-docs"}
+                       :basePath (get @options :base-path)}
              :handler (swagger/create-swagger-handler)}}]
      ["/"
       ;; Only for development; reloads all data from xlsx files
       ["reload-data" {:no-doc true
-                      :get db/load-all-data}]]
+                      :get    db/load-all-data}]]
      characters/characters-routes
      cbb/cbb-routes
      items/items-routes]
@@ -59,18 +64,28 @@
 
 ;; Server
 
+(defonce server (atom nil))
 (def port 3000)
 
+(defn stop []
+  (when @server
+    (.stop @server)
+    (reset! server nil)))
+
 (defn start []
-  (jetty/run-jetty #'app {:port port :join? false})
+  (stop)
+  (reset! server (jetty/run-jetty (app) {:port port :join? false}))
   (println "server running in port " port))
 
-(defn -main [& {:strs [db-host db-port]
-                :or   {db-host "localhost" db-port 5432}}]
-  (println "db-host: " db-host ", db-port: " db-port)
+(defn -main [& {:strs [db-host db-port base-path]
+                :or   {db-host "localhost" db-port 5432}
+                :as   opts}]
+  (println "db-host: " db-host ", db-port: " db-port ", options: " opts)
+  (reset! options (walk/keywordize-keys opts))
   (characters/init-duratom-bindings db-host db-port)
   (db/load-all-data)
   (start))
 
 (comment
-  (-main))
+  (-main)
+  (-main "base-path" "/sw-tools-api/v1"))
