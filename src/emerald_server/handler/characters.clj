@@ -144,11 +144,13 @@
 (defn character-image-show [{{:keys [id]} :path-params}]
   (println "character-image-show")
   (let [[uuid rowidx] (uuid-and-rowidx id)
-        extension (get-in (deref (@*characters rowidx)) [:data :options :image :extension])
-        file (io/file (str local-dir "/img/profile/" uuid "." extension))]
+        extension (get-in (deref (@*characters rowidx)) [:data :options :image :extension])]
+    (println extension)
     {:status 200
-     :headers {"Content-Type" (str "image/" extension)}
-     :body (io/input-stream file)}))
+     :headers {"Content-Type" (str "image/" (or extension "png"))}
+     :body (io/input-stream (if extension
+                              (io/file (str local-dir "/img/profile/" uuid "." extension))
+                              (io/resource "img/character/default.png")))}))
 
 ;; Router ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

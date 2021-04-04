@@ -54,18 +54,21 @@
 (do ;; Status (core & full-specification)
   (s/def :status/hp spec/int?)
   (s/def :status/mp spec/int?)
-  (s/def :status/gamel spec/nat-int?)
-  ;; TODO total と free にして core と full にする…んだけど計算大変なので後回し
-  (s/def :status/exp spec/nat-int?)
+  (s/def :status/g spec/nat-int?)
+  (s/def :status.exp/free spec/nat-int?)
+  (s/def :status.exp/total spec/nat-int?)
+  (s/def :status/exp (s/keys :req-un [:status.exp/free :status.exp/total]))
   (s/def :status/honor spec/nat-int?)
+  (s/def :status/impurity spec/nat-int?)
 
   ;; Core
   ;; If posted with some values missing, default values must be set
   (s/def :status.core/status (s/keys :opt-un [:status/hp
                                               :status/mp
-                                              :status/gamel
+                                              :status/g
                                               :status/exp
                                               :status/honor
+                                              :status/impurity
                                               ::buffs]))
 
   ;; Full
@@ -266,18 +269,34 @@
   (s/def ::abilities (s/coll-of :abilities/ability)))
 
 (do ;; Skills
-  (s/def :skills/general      (s/coll-of spec/string?))
-  (s/def :skills/enhancer     (s/coll-of spec/string?))
-  (s/def :skills.bird/songs   (s/coll-of spec/string?))
-  (s/def :skills.bird/finales (s/coll-of spec/string?))
-  (s/def :skills/bird         (s/keys :req-un [:skills.bird/songs :skills.bird/finales]))
-  (s/def :skills/rider        (s/coll-of spec/string?))
-  (s/def :skills/alchemist    (s/coll-of spec/string?))
-  (s/def :skills/war-leader   (s/coll-of spec/string?))
-  (s/def :skills/mistic       (s/coll-of spec/string?))
-  (s/def :skills/artisan      (s/coll-of spec/string?))
-  (s/def ::skills (s/keys :opt-un [:skills/general :skills/enhancer :skills/bird :skills/rider
-                                   :skills/alchemist :skills/war-leader :skills/mistic :skills/artisan])))
+  (s/def :skills.general/auto   (s/coll-of spec/string?))
+  (s/def :skills.general/manual (s/coll-of spec/string?))
+  (s/def :skills/general        (s/keys :opt-un [:skills.general/auto :skills.general/manual]))
+  (s/def :skills/sorcerer       (s/coll-of spec/string?))
+  (s/def :skills/conjurer       (s/coll-of spec/string?))
+  (s/def :skills/priest         (s/coll-of spec/string?))
+  (s/def :skills/fairy-tamer    (s/coll-of spec/string?))
+  (s/def :skills/enhancer       (s/coll-of spec/string?))
+  (s/def :skills.bird/songs     (s/coll-of spec/string?))
+  (s/def :skills.bird/finales   (s/coll-of spec/string?))
+  (s/def :skills/bird           (s/keys :req-un [:skills.bird/songs :skills.bird/finales]))
+  (s/def :skills/rider          (s/coll-of spec/string?))
+  (s/def :skills/alchemist      (s/coll-of spec/string?))
+  (s/def :skills/war-leader     (s/coll-of spec/string?))
+  (s/def :skills/mistic         (s/coll-of spec/string?))
+  (s/def :skills/artisan        (s/coll-of spec/string?))
+  (s/def ::skills (s/keys :opt-un [:skills/general
+                                   :skills/sorcerer
+                                   :skills/conjurer
+                                   :skills/priest
+                                   :skills/fairy-tamer
+                                   :skills/enhancer
+                                   :skills/bird
+                                   :skills/rider
+                                   :skills/alchemist
+                                   :skills/war-leader
+                                   :skills/mistic
+                                   :skills/artisan])))
 
 (do ;; Options
   (s/def :image/base64 spec/string?)

@@ -56,9 +56,10 @@
         max-hp           (+ (* 3 level) (get-in char-buffedparam [:parameters :total :con]))
         max-mp           (+ (* 3 (ability/level-sum char-buffedparam :magician))
                             (get-in char-buffedparam [:parameters :total :pow]))
-        status           {:level level :max-hp max-hp :max-mp max-mp :hp max-hp :mp max-mp}]
+        status           {:level level :max-hp max-hp :max-mp max-mp}
+        status-default   {:hp max-hp :mp max-mp :honor 0 :g 0 :impurity 0}]
     ;; Keep (merge status %) order: Don't overwrite the existing values
-    (update char-buffedparam :status #(merge status %))))
+    (update char-buffedparam :status #(merge status status-default %))))
 
 (defn char-full-buffed
   "Generate reference values from characted data with buffed parameters."
@@ -106,7 +107,6 @@
 (defn character-full [char-core]
   {:pre  [(s/valid? :character.core/character char-core)]
    :post [(s/valid? ::character %)]}
-  ;; TODO :hp :mp :exp :honor がない場合の処理も
   (let [full (-> char-core
                  (char-buffs-summarized)
                  (char-buffedparam)
@@ -119,4 +119,5 @@
 (comment
   (require '[emerald-server.handler.characters :as chandler])
   (def char-debug (@(get @chandler/*characters 1) :data))
-  (character-full char-debug))
+  (character-full char-debug)
+  (println char-debug))
