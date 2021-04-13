@@ -14,6 +14,15 @@
         data (excel-parser/read-workbook-from-resource path)]
     data))
 
+(defn- remove-comment-column [data]
+  (println "remove-comment-column")
+  (walk/postwalk
+   (fn [item]
+     (if (map? item)
+       (into {} (filter #(not= (ffirst %) \#) item))
+       item))
+   data))
+
 (defn- parse-json-record [data]
   (println "parse-json-record")
   (walk/postwalk
@@ -73,7 +82,9 @@
    "cbb/happening"
    "cbb/infancy"
    "cbb/name"
-   "items"])
+   "items"
+   "equipments"
+   "costs"])
 
 (defn load-all-data [& _]
   (println "load-all-data")
@@ -82,6 +93,7 @@
       (swap! *all-books-data assoc-in ,,
              (map keyword (str/split relpos #"/"))
              (-> (read-data relpos)
+                 (remove-comment-column)
                  (parse-json-record)
                  (arrange-subtables)
                  (arrange-redirects)
