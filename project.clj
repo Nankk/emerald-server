@@ -2,7 +2,7 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [ring/ring-jetty-adapter "1.7.1"]
                  [ring-cors "0.1.13"]
-                 [dk.ative/docjure "1.14.0"]
+                 [org.clojars.nankk/docjure "1.14.1-SNAPSHOT"]
                  [duratom "0.5.2"]
                  [org.clojure/java.jdbc "0.7.11"]
                  [org.postgresql/postgresql "9.4-1206-jdbc42"]
