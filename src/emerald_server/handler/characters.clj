@@ -6,11 +6,7 @@
             [clojure.spec.alpha :as s]
             [duratom.core :refer [destroy]]
             [emerald-server.models.character :as character]
-            [emerald-server.handler.duratom
-             :as
-             emerald.duratom
-             :refer
-             [bind-duratom create-character-duratom]]
+            [emerald-server.handler.duratom :as emerald.duratom :refer [bind-duratom create-character-duratom]]
             [environ.core :refer [env]]))
 
 (declare *uuid->rowidx)
@@ -74,7 +70,7 @@
                                            character))]
     (swap! *uuid->rowidx #(assoc % uuid rowidx))
     (swap! *characters #(assoc % rowidx data!))
-    {:uuid uuid :idx rowidx}))
+    (character/character-full (:data @data!))))
 
 (def local-dir (str (env :home) "/.emerald"))
 
@@ -104,7 +100,7 @@
   (println "characters-add")
   (let [uuid (str (java.util.UUID/randomUUID))]
     (save-image body uuid)
-    {:status 200 :body (assoc (add-character body uuid) :message "Character successfully added.")}))
+    {:status 200 :body (add-character body uuid)}))
 
 (defn characters-summary [_]
   (println "characters-summary")
@@ -121,15 +117,17 @@
   (println "character-show")
   (println "id: " id)
   (let [[_ rowidx] (uuid-and-rowidx id)]
+    (println "hawawa")
     {:status 200 :body (character/character-full (@(@*characters rowidx) :data))}))
 
 (defn character-update [{{:keys [id]} :path-params {:keys [body]} :parameters}]
   (println "character-update")
   (let [[uuid rowidx] (uuid-and-rowidx id)]
     (if rowidx
-      (let [character-duratom! (@*characters rowidx)]
-        (reset! character-duratom! {:uuid uuid :data body})
-        {:status 200 :body {:message (str "Character " id " updated.")}})
+      (let [character-duratom! (@*characters rowidx)
+            char-data (assoc body :uuid uuid :idx rowidx)]
+        (reset! character-duratom! {:uuid uuid :data char-data})
+        {:status 200 :body (character/character-full char-data)})
       {:status 400 :body {:errors ["Character not found."]}})))
 
 (defn character-delete [{{:keys [id]} :path-params}]
@@ -163,9 +161,7 @@
            :handler   characters-show}
      :post {:summary   "Register a character and returns its id."
             :parameters {:body :character.core/character}
-            :responses {200 {:body (s/keys :req-un [::character/message
-                                                    ::character/uuid
-                                                    ::character/idx])}}
+            :responses {200 {:body ::character/character}}
             :handler   characters-add}}]
    ["/summary"
     {:get {:summary   "Returns all characters' summary list."
@@ -180,7 +176,7 @@
       :put {:summary   "Update a character specified by id."
             :parameters {:path {:id ::character/id}
                          :body :character.core/character}
-            :responses {200 {:body (s/keys :req-un [::character/message])}
+            :responses {200 {:body ::character/character}
                         400 {:body (s/keys :req-un [::character/errors])}}
             :handler   character-update}
       :delete {:summary   "Delete a character specified by id."

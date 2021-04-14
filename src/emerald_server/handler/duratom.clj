@@ -16,4 +16,7 @@
            :db-config @*db-config
            :table-name table-name
            :row-id row-idx
-           :init (assoc {:uuid id} :data character)))
+           :init {:uuid id
+                  :data (assoc character
+                               :uuid id
+                               :idx row-idx)}))

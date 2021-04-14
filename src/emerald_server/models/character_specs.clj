@@ -338,11 +338,15 @@
                                                     ::languages
                                                     ::abilities
                                                     ::skills]
-                                           :opt-un [::options]))
+                                           :opt-un [::uuid
+                                                    ::idx
+                                                    ::options]))
 
   ;; ::character is full specification of character;
   ;; contains both primary and secondary variables
-  (s/def ::character (s/keys :req-un [::personality
+  (s/def ::character (s/keys :req-un [::uuid
+                                      ::idx
+                                      ::personality
                                       ::status
                                       ::parameters
                                       ::reference-values

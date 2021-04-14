@@ -107,12 +107,13 @@
 (defn character-full [char-core]
   {:pre  [(s/valid? :character.core/character char-core)]
    :post [(s/valid? ::character %)]}
-  (let [full (-> char-core
-                 (char-buffs-summarized)
-                 (char-buffedparam)
-                 (char-buffedstatus)
-                 (char-full-buffed))]
-    (dissoc full :buffs-summary)))
+  (let [c char-core
+        c (char-buffs-summarized c)
+        c (char-buffedparam c)
+        c (char-buffedstatus c)
+        c (char-full-buffed c)]
+    (println "a")
+    (dissoc c :buffs-summary)))
 
 ;; Debug
 
