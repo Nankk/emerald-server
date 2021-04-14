@@ -84,7 +84,8 @@
    "cbb/name"
    "items"
    "equipments"
-   "costs"])
+   "costs"
+   "tables"])
 
 (defn load-all-data [& _]
   (println "load-all-data")

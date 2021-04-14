@@ -4,6 +4,7 @@
             [emerald-server.handler.cbb :as cbb]
             [emerald-server.handler.characters :as characters]
             [emerald-server.handler.items :as items]
+            [emerald-server.handler.tables :as tables]
             [muuntaja.core :as m]
             reitit.coercion.spec
             [reitit.dev.pretty :as pretty]
@@ -38,7 +39,8 @@
                       :get    db/load-all-data}]]
      characters/characters-routes
      cbb/cbb-routes
-     items/items-routes]
+     items/items-routes
+     tables/tables-routes]
     {:conflicts nil
      :exception pretty/exception
      :data      {:coercion   reitit.coercion.spec/coercion
