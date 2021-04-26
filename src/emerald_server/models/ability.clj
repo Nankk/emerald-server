@@ -12,16 +12,13 @@
    "マギテック"         #{:magician}
    "デーモンルーラー"   #{:magician}
    "ドルイド"           #{:magician}
-   "グリモワール"       #{:magician}
    "スカウト"           #{:other}
    "レンジャー"         #{:other}
    "セージ"             #{:other}
    "エンハンサー"       #{:other}
    "バード"             #{:other}
    "ライダー"           #{:other}
-   "アルケミスト"       #{:other}
-   "ウォーリーダー"     #{:other}
-   "ミスティック"       #{:other}})
+   "アルケミスト"       #{:other}})
 
 (def magical-key->str
   {:sorcerer    "ソーサラー"
@@ -30,8 +27,7 @@
    :fairy-tamer "フェアリーテイマー"
    :magitech    "マギテック"
    :demon-ruler "デーモンルーラー"
-   :druid       "ドルイド"
-   :grimoire    "グリモワール"})
+   :druid       "ドルイド"})
 
 (def str->key
   {"ファイター"         :fighter
@@ -45,16 +41,13 @@
    "マギテック"         :magitech
    "デーモンルーラー"   :demon-ruler
    "ドルイド"           :druid
-   "グリモワール"       :grimoire
    "スカウト"           :scout
    "レンジャー"         :ranger
    "セージ"             :sage
    "エンハンサー"       :enhancer
    "バード"             :bird
    "ライダー"           :rider
-   "アルケミスト"       :alchemist
-   "ウォーリーダー"     :war-leader
-   "ミスティック"       :mistic})
+   "アルケミスト"       :alchemist})
 
 (def key->str
   {:fighter    "ファイター"
@@ -68,16 +61,13 @@
    :magitech    "マギテック"
    :demon-ruler "デーモンルーラー"
    :druid       "ドルイド"
-   :grimoire    "グリモワール"
    :scout       "スカウト"
    :ranger      "レンジャー"
    :sage        "セージ"
    :enhancer    "エンハンサー"
    :bird        "バード"
    :rider       "ライダー"
-   :alchemist   "アルケミスト"
-   :war-leader  "ウォーリーダー"
-   :mistic      "ミスティック"})
+   :alchemist   "アルケミスト"})
 
 (defn level-sum
   "Returns summation of levels specified by category of character."
