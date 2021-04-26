@@ -10,7 +10,7 @@
    :status      {:hp       20
                  :mp       10
                  :g        1000
-                 :exp      {:free 1500 :total 5000}
+                 :exp      {:total 5000 :used 3500}
                  :honor    20
                  :impurity 0}
    :parameters  {:base    {:physique 15 :technique 2 :mind 7}
@@ -51,7 +51,7 @@
    :status           {:impurity 0
                       :max-hp   39
                       :max-mp   10
-                      :exp      {:free 1500 :total 5000}
+                      :exp      {:free 1500 :total 5000 :used 3500}
                       :honor    20
                       :level    2
                       :g        1000

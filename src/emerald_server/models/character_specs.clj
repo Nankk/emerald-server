@@ -55,31 +55,39 @@
   (s/def :status/hp spec/int?)
   (s/def :status/mp spec/int?)
   (s/def :status/g spec/nat-int?)
-  (s/def :status.exp/free spec/nat-int?)
+  (s/def :status.exp/used spec/nat-int?)
   (s/def :status.exp/total spec/nat-int?)
-  (s/def :status/exp (s/keys :req-un [:status.exp/free :status.exp/total]))
+  (s/def :status.exp/free spec/nat-int?)
+  (s/def :status.exp/core (s/keys :req-un [:status.exp/used :status.exp/total]))
+  (s/def :status/exp (s/keys :req-un [:status.exp/used :status.exp/total :status.exp/free]))
   (s/def :status/honor spec/nat-int?)
   (s/def :status/impurity spec/nat-int?)
 
   ;; Core
-  ;; If posted with some values missing, default values must be set
+  ;; If posted with some values missing, default values must be set in server side
   (s/def :status.core/status (s/keys :opt-un [:status/hp
                                               :status/mp
                                               :status/g
-                                              :status/exp
+                                              :status.exp/core
                                               :status/honor
                                               :status/impurity
                                               ::buffs]))
 
-  ;; Full
+  ;; Secondary
   (s/def :status/level spec/pos-int?)
   (s/def :status/max-hp spec/pos-int?)
   (s/def :status/max-mp spec/pos-int?)
-  (s/def :status.secondary/status (s/keys :req-un [:status/level
-                                                   :status/max-hp
-                                                   :status/max-mp]))
-  (s/def ::status (s/merge :status.core/status
-                           :status.secondary/status)))
+  ;; Full
+  (s/def ::status (s/keys :req-un [:status/hp
+                                   :status/mp
+                                   :status/g
+                                   :status/exp
+                                   :status/honor
+                                   :status/impurity
+                                   :status/level
+                                   :status/max-hp
+                                   :status/max-mp]
+                          :opt-un [::buffs])))
 
 (do ;; Parameters (core & full-specification)
   (s/def :parameters.base/physique spec/nat-int?)

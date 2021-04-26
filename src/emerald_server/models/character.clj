@@ -56,10 +56,12 @@
         max-hp           (+ (* 3 level) (get-in char-buffedparam [:parameters :total :con]))
         max-mp           (+ (* 3 (ability/level-sum char-buffedparam :magician))
                             (get-in char-buffedparam [:parameters :total :pow]))
+        exp              (get-in char-buffedparam [:status :exp])
+        exp-free         (- (exp :total) (exp :used))
         status           {:level level :max-hp max-hp :max-mp max-mp}
         status-default   {:hp max-hp :mp max-mp :honor 0 :g 0 :impurity 0}]
-    ;; Keep (merge status %) order: Don't overwrite the existing values
-    (update char-buffedparam :status #(merge status status-default %))))
+    ;; Keep merge order: Don't overwrite the existing values
+    (update char-buffedparam :status #(merge status status-default % {:exp (assoc exp :free exp-free)}))))
 
 (defn char-full-buffed
   "Generate reference values from characted data with buffed parameters."
@@ -112,7 +114,6 @@
         c (char-buffedparam c)
         c (char-buffedstatus c)
         c (char-full-buffed c)]
-    (println "a")
     (dissoc c :buffs-summary)))
 
 ;; Debug
