@@ -58,7 +58,7 @@
   (s/def :status.exp/used spec/nat-int?)
   (s/def :status.exp/total spec/nat-int?)
   (s/def :status.exp/free spec/nat-int?)
-  (s/def :status.exp/core (s/keys :req-un [:status.exp/used :status.exp/total]))
+  (s/def :status.core/exp (s/keys :req-un [:status.exp/used :status.exp/total]))
   (s/def :status/exp (s/keys :req-un [:status.exp/used :status.exp/total :status.exp/free]))
   (s/def :status/honor spec/nat-int?)
   (s/def :status/impurity spec/nat-int?)
@@ -68,7 +68,7 @@
   (s/def :status.core/status (s/keys :opt-un [:status/hp
                                               :status/mp
                                               :status/g
-                                              :status.exp/core
+                                              :status.core/exp
                                               :status/honor
                                               :status/impurity
                                               ::buffs]))
