@@ -155,7 +155,8 @@
         extension (get-in (deref (@*characters rowidx)) [:data :options :image :extension])]
     (println extension)
     {:status 200
-     :headers {"Content-Type" (str "image/" (or extension "png"))}
+     :headers {"Content-Type" (str "image/" (or extension "png"))
+               "Cache-Control" "no-store"}
      :body (io/input-stream (if extension
                               (io/file (str local-dir "/img/profile/" uuid "." extension))
                               (io/resource "img/character/default.png")))}))
