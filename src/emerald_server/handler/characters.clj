@@ -84,11 +84,13 @@
                (io/file file-path)))))
 
 (defn delete-file-if [path]
+  (println "delete-file-if")
   (when (.exists (io/file path))
+    (println "deleting " path "...")
     (io/delete-file path)))
 
 (defn delete-character [uuid rowidx]
-  (let [extension (get-in (deref (@*characters rowidx)) [:data :image :extension])]
+  (let [extension (get-in (deref (@*characters rowidx)) [:data :options :image :extension])]
     (when extension
       (delete-file-if (str local-dir "/img/profile/" uuid "." extension)))
     (destroy (bind-duratom rowidx))
@@ -127,7 +129,6 @@
   (println "character-show")
   (println "id: " id)
   (let [[_ rowidx] (uuid-and-rowidx id)]
-    (println "hawawa")
     {:status 200 :body (character/character-full (@(@*characters rowidx) :data))}))
 
 (defn character-update [{{:keys [id]} :path-params {:keys [body]} :parameters}]
