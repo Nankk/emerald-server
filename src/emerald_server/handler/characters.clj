@@ -77,16 +77,20 @@
 (defn save-image [{{{:keys [base64 extension]} :image} :options} uuid]
   (println "save-image")
   (when (and base64 extension)
-    (println "saving image..." base64 extension)
     (let [file-path (str local-dir "/img/profile/" uuid "." extension)]
+      (println "saving image to " file-path "...")
       (io/make-parents file-path)
       (io/copy (b64-codec/decode (.getBytes base64))
                (io/file file-path)))))
 
+(defn delete-file-if [path]
+  (when (.exists (io/file path))
+    (io/delete-file path)))
+
 (defn delete-character [uuid rowidx]
   (let [extension (get-in (deref (@*characters rowidx)) [:data :image :extension])]
     (when extension
-      (io/delete-file (str local-dir "/img/profile/" uuid "." extension) true))
+      (delete-file-if (str local-dir "/img/profile/" uuid "." extension)))
     (destroy (bind-duratom rowidx))
     (swap! *characters #(dissoc % rowidx))
     (swap! *uuid->rowidx #(dissoc % uuid))))
@@ -99,8 +103,14 @@
 (defn characters-add [{{:keys [body]} :parameters}]
   (println "characters-add")
   (let [uuid (str (java.util.UUID/randomUUID))]
-    (save-image body uuid)
-    {:status 200 :body (add-character body uuid)}))
+    (try
+      (save-image body uuid)
+      {:status 200 :body (add-character body uuid)}
+      (catch Exception e
+        (let [{{{:keys [extension]} :image} :options} body
+              file-path (str local-dir "/img/profile/" uuid "." extension)]
+          (delete-file-if file-path))
+        (throw (Exception. e))))))
 
 (defn characters-summary [_]
   (println "characters-summary")

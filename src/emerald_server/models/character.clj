@@ -51,7 +51,7 @@
 (defn char-buffedstatus
   "Returns character data with buffed status."
   [char-buffedparam]
-  (println "char-full-buffed")
+  (println "char-full-buffedstatus")
   (let [level            (apply max (map :level (char-buffedparam :abilities)))
         max-hp           (+ (* 3 level) (get-in char-buffedparam [:parameters :total :con]))
         max-mp           (+ (* 3 (ability/level-sum char-buffedparam :magician))
