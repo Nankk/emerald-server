@@ -60,6 +60,11 @@
   (s/def :status.exp/free spec/nat-int?)
   (s/def :status.core/exp (s/keys :req-un [:status.exp/used :status.exp/total]))
   (s/def :status/exp (s/keys :req-un [:status.exp/used :status.exp/total :status.exp/free]))
+  (s/def :status.achievements/used spec/nat-int?)
+  (s/def :status.achievements/total spec/nat-int?)
+  (s/def :status.achievements/free spec/nat-int?)
+  (s/def :status.core/achievements (s/keys :req-un [:status.achievements/used :status.achievements/total]))
+  (s/def :status/achievements (s/keys :req-un [:status.achievements/used :status.achievements/total :status.achievements/free]))
   (s/def :status/honor spec/nat-int?)
   (s/def :status/impurity spec/nat-int?)
 
@@ -69,6 +74,7 @@
                                               :status/mp
                                               :status/g
                                               :status.core/exp
+                                              :status.core/achievements
                                               :status/honor
                                               :status/impurity
                                               ::buffs]))
@@ -82,6 +88,7 @@
                                    :status/mp
                                    :status/g
                                    :status/exp
+                                   :status/achievements
                                    :status/honor
                                    :status/impurity
                                    :status/level
