@@ -67,10 +67,11 @@
         data!  (create-character-duratom uuid rowidx
                                          (if (get-in character [:options :image :base64])
                                            (update-in character [:options :image] dissoc :base64)
-                                           character))]
+                                           character))
+        char   (character/character-full (:data @data!))]
     (swap! *uuid->rowidx #(assoc % uuid rowidx))
     (swap! *characters #(assoc % rowidx data!))
-    (character/character-full (:data @data!))))
+    char))
 
 (def local-dir (str (env :home) "/.emerald"))
 
