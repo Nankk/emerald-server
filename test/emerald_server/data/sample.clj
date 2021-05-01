@@ -1,18 +1,19 @@
 (ns emerald-server.data.sample)
 
 (def character
-  {:uuid "sample"
-   :idx 999
+  {:uuid        "sample"
+   :idx         999
    :personality {:name    {:first "サンプルマン" :middle "string" :last "string"}
                  :age     999
                  :gender  "male"
                  :species {:name "人間"}}
-   :status      {:hp       20
-                 :mp       10
-                 :g        1000
-                 :exp      {:total 5000 :used 3500}
-                 :honor    20
-                 :impurity 0}
+   :status      {:hp           20
+                 :mp           10
+                 :g            1000
+                 :exp          {:total 5000 :used 3500}
+                 :achievements {:total 10 :used 2}
+                 :honor        20
+                 :impurity     0}
    :parameters  {:base    {:physique 15 :technique 2 :mind 7}
                  :initial {:dex 8 :agi 7 :str 15 :con 17 :int 1 :pow 2}
                  :growth  {:dex 1 :agi 1 :str 1 :con 1 :int 1 :pow 1}}
@@ -52,6 +53,7 @@
                       :max-hp   39
                       :max-mp   10
                       :exp      {:free 1500 :total 5000 :used 3500}
+                      :achievements {:total 10 :used 2 :free 8}
                       :honor    20
                       :level    2
                       :g        1000
