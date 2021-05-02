@@ -87,16 +87,40 @@
    "costs"
    "tables"])
 
+(def mappify-targets
+  ["items" "equipments" "costs"])
+
+(defn mappify-sheet [data-sheetwise]
+  ;; Simple loop is better than group-by here because uuids should be unique
+  (into {} (for [item data-sheetwise]
+             [(item "uuid") item])))
+
+(defn mappify-book [data-bookwise]
+  (into {} (apply merge (for [[k data-sheetwise] data-bookwise]
+                          (mappify-sheet data-sheetwise)))))
+
+(defn add-uuid-based-map [data targets]
+  (let [transient (atom data)]
+    (doseq [target targets]
+      (let [ks (keys (data target))]
+        (swap! transient assoc ,,
+               (str (name target) "-map")
+               (mappify-book (data target)))))
+    @transient))
+
 (defn load-all-data [& _]
   (println "load-all-data")
   (let [*all-books-data (atom {})]
     (doseq [relpos book-relposs]
       (swap! *all-books-data assoc-in ,,
-             (map keyword (str/split relpos #"/"))
+             (str/split relpos #"/")
              (-> (read-data relpos)
                  (remove-comment-column)
                  (parse-json-record)
                  (arrange-subtables)
                  (arrange-redirects)
                  (remove-nil-values))))
-    (reset! *data @*all-books-data)))
+    (let [mappified (add-uuid-based-map
+                     @*all-books-data
+                     mappify-targets)]
+      (reset! *data (walk/keywordize-keys mappified)))))
