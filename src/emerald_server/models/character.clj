@@ -3,23 +3,30 @@
             [clojure.spec.alpha :as s]
             [clojure.walk :as walk]
             [emerald-server.models.ability :as ability]
+            [emerald-server.db :as db]
             [spec-tools.spec :as spec]))
 
 (load "character_specs")
 
 (defn char-buffs-summarized [char-core]
-  (let [buffs-summary (vec (let [*gathered (atom [])]
-                             (doseq [k [:equipments :status]]
-                               (walk/postwalk
-                                #(do (when (and (map? %) (% :buffs)
-                                                ;; temporary buffs are not counted for refvals
-                                                (not (or (get-in % [:buffs :remaining-rounds])
-                                                         (get-in % [:buffs :valid-to])
-                                                         (get-in % [:buffs :when]))))
-                                       (swap! *gathered concat ,, (% :buffs)))
-                                     %)
-                                (get char-core k)))
-                             @*gathered))]
+  (let [buffs-summary
+        (vec (let [*gathered (atom [])]
+               (doseq [k [:equipments :status]]
+                 (walk/postwalk
+                  #(do
+                     (when (and (map? %)
+                                ;; temporary buffs are not counted for refvals
+                                (not (or (get-in % [:buffs :remaining-rounds])
+                                         (get-in % [:buffs :valid-to])
+                                         (get-in % [:buffs :when]))))
+                       (cond
+                         (% :buffs) (swap! *gathered concat ,, (% :buffs))
+                         (% :uuid)  (let [eqps  (@db/*data :equipments-map)
+                                          buffs (get-in eqps [(keyword (% :uuid)) :buffs])]
+                                      (swap! *gathered concat ,, buffs))))
+                     %)
+                  (get char-core k)))
+               @*gathered))]
     (assoc char-core :buffs-summary buffs-summary)))
 
 (def buff-str->key
@@ -40,9 +47,9 @@
         total-raw    (merge-with + inherent growth)
         bonus-raw    (walk/postwalk #(if (integer? %) (int (/ % 6)) %) total-raw)
         pbuffs       (filter #(some #{(% :target)} (keys buff-str->key)) buffs)
-        pbuffvals    (into {} (for [[{k :target v :value}] pbuffs] [k v]))
+        pbuffvals    (into {} (for [{k :target v :value} pbuffs] [(buff-str->key k) v]))
         buff         (merge-with + params-default pbuffvals)
-        total-buffed (merge-with + total-raw buff)
+        total-buffed (merge-with #(max 0 (+ %1 %2)) total-raw buff)
         bonus-buffed (walk/postwalk #(if (integer? %) (int (/ % 6)) %) total-buffed)
         new-params   (assoc params
                             :buff  buff
@@ -87,14 +94,17 @@
   (println "char-full-buffed")
   (let [warrior-sum   (ability/level-sum char-buffedstatus :warrior)
         cqc-sum       (ability/level-sum char-buffedstatus :cqc)
-        damage-bonus  (if-not (zero? warrior-sum) (+ warrior-sum str) 0)
+        damage-bonus  (+ (if-not (zero? warrior-sum) (+ warrior-sum str) 0)
+                         (reduce + (map :value (filter #(and (= (set (keys %)) #{:target :value :attack-type})
+                                                             (= (% :target) "ダメージ上昇")
+                                                             (= (% :attack-type) "物理")) buffs))))
         defense       (reduce + (map :value (filter #(and (= (set (keys %)) #{:target :value :attack-type})
                                                           (= (% :target) "ダメージ軽減")
                                                           (= (% :attack-type) "物理")) buffs)))
-        hit           (if-not (zero? warrior-sum) (+ (+ warrior-sum dex) (buff-sum buffs "命中")) 0)
-        dodge         (if-not (zero? cqc-sum) (+ (+ cqc-sum agi) (buff-sum buffs "回避")) 0)
-        resistance    {:con (+ (+ level con) (buff-sum buffs "生命抵抗"))
-                       :pow (+ (+ level pow) (buff-sum buffs "精神抵抗"))}
+        hit           (if-not (zero? warrior-sum) (+ (+ warrior-sum dex) (buff-sum buffs "命中力判定")) 0)
+        dodge         (if-not (zero? cqc-sum) (+ (+ cqc-sum agi) (buff-sum buffs "回避力判定")) 0)
+        resistance    {:con (+ (+ level con) (buff-sum buffs "生命抵抗力判定"))
+                       :pow (+ (+ level pow) (buff-sum buffs "精神抵抗力判定"))}
         magical-power (into {} (for [[k aname] ability/magical-key->str
                                      :let      [sum (ability/level-if char-buffedstatus aname)]
                                      :when     sum]

@@ -113,8 +113,14 @@
                                               :parameters/con :parameters/int :parameters/pow]))
   (s/def :parameters/growth (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
                                              :parameters/con :parameters/int :parameters/pow]))
-  (s/def :parameters/buff (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
-                                           :parameters/con :parameters/int :parameters/pow]))
+  (s/def :parameters.buff/dex spec/int?)
+  (s/def :parameters.buff/agi spec/int?)
+  (s/def :parameters.buff/str spec/int?)
+  (s/def :parameters.buff/con spec/int?)
+  (s/def :parameters.buff/int spec/int?)
+  (s/def :parameters.buff/pow spec/int?)
+  (s/def :parameters/buff (s/keys :req-un [:parameters.buff/dex :parameters.buff/agi :parameters.buff/str
+                                           :parameters.buff/con :parameters.buff/int :parameters.buff/pow]))
 
   ;; Core
   (s/def :parameters.core/parameters (s/keys :req-un [:parameters/base
