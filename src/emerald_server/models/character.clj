@@ -25,6 +25,9 @@
 (def buff-str->key
   {"筋力" :str "生命力" :con "知力" :int "精神力" :pow "器用度" :dex "敏捷度" :agi})
 
+(def params-default
+  {:str 0 :con 0 :dex 0 :agi 0 :int 0 :pow 0})
+
 (defn char-buffedparam
   "Completes secondary parameter data applying buffs."
   [{{:keys [base initial growth] :as params} :parameters
@@ -35,11 +38,18 @@
                                       (or (= k :dex) (= k :agi)) [k (+ v (base :technique))]
                                       (or (= k :int) (= k :pow)) [k (+ v (base :mind))])))
         total-raw    (merge-with + inherent growth)
+        bonus-raw    (walk/postwalk #(if (integer? %) (int (/ % 6)) %) total-raw)
         pbuffs       (filter #(some #{(% :target)} (keys buff-str->key)) buffs)
         pbuffvals    (into {} (for [[{k :target v :value}] pbuffs] [k v]))
-        total-buffed (merge-with + total-raw pbuffvals)
-        bonus        (walk/postwalk #(if (integer? %) (int (/ % 6)) %) total-buffed)
-        new-params   (assoc params :total total-buffed :bonus bonus)]
+        buff         (merge-with + params-default pbuffvals)
+        total-buffed (merge-with + total-raw buff)
+        bonus-buffed (walk/postwalk #(if (integer? %) (int (/ % 6)) %) total-buffed)
+        new-params   (assoc params
+                            :buff  buff
+                            :total total-raw
+                            :total-buffed total-buffed
+                            :bonus bonus-raw
+                            :bonus-buffed bonus-buffed)]
     (assoc char-buffs-summarized :parameters new-params)))
 
 (defn buff-sum

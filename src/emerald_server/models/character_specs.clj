@@ -113,6 +113,8 @@
                                               :parameters/con :parameters/int :parameters/pow]))
   (s/def :parameters/growth (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
                                              :parameters/con :parameters/int :parameters/pow]))
+  (s/def :parameters/buff (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
+                                           :parameters/con :parameters/int :parameters/pow]))
 
   ;; Core
   (s/def :parameters.core/parameters (s/keys :req-un [:parameters/base
@@ -122,9 +124,17 @@
   ;; Full
   (s/def :parameters/total (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
                                             :parameters/con :parameters/int :parameters/pow]))
+  (s/def :parameters/total-buffed (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
+                                                   :parameters/con :parameters/int :parameters/pow]))
   (s/def :parameters/bonus (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
                                             :parameters/con :parameters/int :parameters/pow]))
-  (s/def :parameters.secondary/parameters (s/keys :req-un [:parameters/total :parameters/bonus]))
+  (s/def :parameters/bonus-buffed (s/keys :req-un [:parameters/dex :parameters/agi :parameters/str
+                                                   :parameters/con :parameters/int :parameters/pow]))
+  (s/def :parameters.secondary/parameters (s/keys :req-un [:parameters/buff
+                                                           :parameters/total
+                                                           :parameters/total-buffed
+                                                           :parameters/bonus
+                                                           :parameters/bonus-buffed]))
   (s/def ::parameters (s/merge :parameters.core/parameters
                                :parameters.secondary/parameters)))
 
