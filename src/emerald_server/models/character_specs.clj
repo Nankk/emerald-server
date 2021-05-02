@@ -203,52 +203,13 @@
 (do ;; Equipments
   (s/def :equipments/uuid spec/string?)
   (s/def :equipments/name spec/string?)
-  (s/def :equipments/type spec/string?)
-  (s/def :equipments/hands #{"1H" "1H投" "1H#" "1H拳" "1H両" "2H" "振2H" "突2H"})
-  (s/def :equipments/category spec/string?)
-  (s/def :equipments/price spec/pos-int?)
-  (s/def :equipments/rank #{"B" "A" "S" "SS"})
-  (s/def :equipments/force spec/nat-int?)
-  (s/def :equipments/weight spec/pos-int?)
-  (s/def :equipments/critical spec/pos-int?)
-  (s/def :equipments/buffs spec/coll?)
-  (s/def :equipments/range spec/pos-int?)
-  (s/def :equipments/dedicated spec/string?)
-  (s/def :equipments/incompatible spec/string?)
-  (s/def :equipments/note spec/string?)
-  (s/def :equipments/reference spec/string?)
-  (s/def :equipments/not-implemented spec/boolean?)
-  (s/def :equipments.weapons/weapon (s/keys :req-un [:equipments/name
-                                                     :equipments/type
-                                                     :equipments/hands
-                                                     :equipments/category
-                                                     :equipments/rank
-                                                     :equipments/force
-                                                     :equipments/weight
-                                                     :equipments/critical]
-                                            :opt-un [:equipments/price
-                                                     :equipments/buffs
-                                                     :equipments/range
-                                                     :equipments/dedicated
-                                                     :equipments/incompatible
-                                                     :equipments/note
-                                                     :equipments/reference
-                                                     :equipments/not-implemented
-                                                     ]))
+  (s/def :equipments.weapons/weapon (s/keys :req-un [:equipments/uuid
+                                                     :equipments/name]))
   (s/def :equipments/weapons (s/coll-of :equipments.weapons/weapon))
   (s/def :equipments/shield (s/keys :req-un [:equipments/uuid
                                              :equipments/name]))
   (s/def :equipments/armor (s/keys :req-un [:equipments/name
-                                            :equipments/category
-                                            :equipments/rank
-                                            :equipments/weight]
-                                   :opt-un [:equipments/price
-                                            :equipments/buffs
-                                            :equipments/dedicated
-                                            :equipments/incompatible
-                                            :equipments/note
-                                            :equipments/reference
-                                            :equipments/not-implemented]))
+                                            :equipments/uuid]))
   (s/def ::equipments (s/keys :opt-un [:equipments/weapons
                                        :equipments/shield
                                        :equipments/armor])))
