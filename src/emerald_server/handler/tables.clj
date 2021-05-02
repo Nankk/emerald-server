@@ -14,4 +14,4 @@
            {:get {:summary (str "Returns " category " table.")
                   :handler (fn [_]
                              {:status 200
-                              :body   (get-in @db/*data [:tables category])})}}])))
+                              :body   (get-in @db/*data [:tables (keyword category)])})}}])))
