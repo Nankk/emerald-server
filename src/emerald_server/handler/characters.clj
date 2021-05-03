@@ -159,9 +159,10 @@
     {:status 200
      :headers {"Content-Type" (str "image/" (or extension "png"))
                "Cache-Control" "no-store"}
-     :body (io/input-stream (if extension
-                              (io/file (str local-dir "/img/profile/" uuid "." extension))
-                              (io/resource "img/character/default.png")))}))
+     :body (io/input-stream (let [path (str local-dir "/img/profile/" uuid "." extension)]
+                              (if (.exists (io/file path))
+                                (io/file path)
+                                (io/resource "img/character/default.png"))))}))
 
 ;; Router ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
