@@ -5,6 +5,7 @@
             [emerald-server.handler.characters :as characters]
             [emerald-server.handler.items :as items]
             [emerald-server.handler.tables :as tables]
+            [clojure.spec.alpha :as s]
             [muuntaja.core :as m]
             reitit.coercion.spec
             [reitit.dev.pretty :as pretty]
@@ -83,6 +84,7 @@
                 :or   {db-host "localhost" db-port 5432}
                 :as   opts}]
   (println "db-host: " db-host ", db-port: " db-port ", options: " opts)
+  (s/check-asserts true)
   (reset! options (walk/keywordize-keys opts))
   (characters/init-duratom-bindings db-host db-port)
   (db/load-all-data)

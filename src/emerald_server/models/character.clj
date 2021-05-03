@@ -131,8 +131,8 @@
             :packages      packages})))
 
 (defn character-full [char-core]
-  {:pre  [(s/valid? :character.core/character char-core)]
-   :post [(s/valid? ::character %)]}
+  {:pre  [(s/assert :character.core/character char-core)]
+   :post [(s/assert ::character %)]}
   (let [c char-core
         c (char-buffs-summarized c)
         c (char-buffedparam c)
