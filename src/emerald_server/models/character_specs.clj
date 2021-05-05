@@ -204,7 +204,7 @@
   (s/def :items/item (s/keys :req-un [:items.item/uuid
                                       :items.item/name
                                       :items.item/count]))
-  (s/def ::items (s/coll-of :items/item)))
+  (s/def ::items (s/map-of :items.item/uuid :items/item)))
 
 (do ;; Equipments
   (s/def :equipments/uuid spec/string?)
@@ -246,19 +246,17 @@
                                         :accessories/others])))
 
 (do ;; Languages
-  (s/def :languages.language/name spec/string?)
+  (s/def :languages/name spec/string?)
   (s/def :languages.language/oral spec/boolean?)
   (s/def :languages.language/literal spec/boolean?)
-  (s/def :languages/language (s/keys :req-un [:languages.language/name
-                                              :languages.language/oral
+  (s/def :languages/language (s/keys :req-un [:languages.language/oral
                                               :languages.language/literal]))
-  (s/def ::languages (s/coll-of :languages/language)))
+  (s/def ::languages (s/map-of :languages/name :languages/language)))
 
 (do ;; Abilities
-  (s/def :abilities.ability/name spec/string?)
-  (s/def :abilities.ability/level spec/nat-int?)
-  (s/def :abilities/ability (s/keys :req-un [:abilities.ability/name :abilities.ability/level]))
-  (s/def ::abilities (s/coll-of :abilities/ability)))
+  (s/def :abilities/name spec/string?)
+  (s/def :abilities/level spec/nat-int?)
+  (s/def ::abilities (s/map-of :abilities/name :abilities/level)))
 
 (do ;; Skills
   (s/def :skills.general/auto   (s/coll-of spec/string?))
