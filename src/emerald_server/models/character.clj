@@ -69,7 +69,7 @@
   "Returns character data with buffed status."
   [char-buffedparam]
   (println "char-full-buffedstatus")
-  (let [level             (apply max (map :level (char-buffedparam :abilities)))
+  (let [level             (apply max (vals (char-buffedparam :abilities)))
         max-hp            (+ (* 3 level) (get-in char-buffedparam [:parameters :total :con]))
         max-mp            (+ (* 3 (ability/level-sum char-buffedparam :magician))
                              (get-in char-buffedparam [:parameters :total :pow]))

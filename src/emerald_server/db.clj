@@ -23,17 +23,37 @@
        item))
    data))
 
-(defn- parse-json-record [data]
+(defn- parse-json-record
+  "Parse json string corresponding to the key with `-json` postfix in map data."
+  [data]
   (println "parse-json-record")
   (walk/postwalk
    (fn [x]
-     (if (and (map? x) (some #(re-find #"([A-z]+)-json" %) (keys x)))
-       (let [json-keys    (filter identity (map #(re-find #"([A-z]+)-json" %) (keys x)))
-             parsed-pairs (into {} (for [[cur-key new-key] json-keys]
+     (let [pattern #"([A-z-_]+)-json"]
+       (if (and (map? x) (some #(re-find pattern %) (keys x)))
+         (let [json-keys  (filter identity (map #(re-find pattern %) (keys x)))
+               parsed-map (into {} (for [[cur-key new-key] json-keys]
                                      [new-key (when-not (str/blank? (x cur-key))
                                                 (json/read-str (x cur-key)))]))]
-         (merge (apply dissoc x (map first json-keys)) parsed-pairs))
-       x))
+           (merge (apply dissoc x (map first json-keys)) parsed-map))
+         x)))
+   data))
+
+(defn- parse-list-record
+  "Parse list items string corresponding to the key with `-list` postfix in map data."
+  [data]
+  (println "parse-list-record")
+  (walk/postwalk
+   (fn [x]
+     (let [pattern #"([A-z-_]+)-list"]
+       (if (and (map? x) (some #(re-find pattern %) (keys x)))
+         (let [list-keys  (filter identity (map #(re-find pattern %) (keys x)))
+               parsed-map (into {} (for [[cur-key new-key] list-keys]
+                                     [new-key (let [s (x cur-key)]
+                                                (when-not (str/blank? s)
+                                                  (str/split s #",")))]))]
+           (merge (apply dissoc x (map first list-keys)) parsed-map))
+         x)))
    data))
 
 (defn- arrange-subtables [data]
@@ -117,6 +137,7 @@
              (-> (read-data relpos)
                  (remove-comment-column)
                  (parse-json-record)
+                 (parse-list-record)
                  (arrange-subtables)
                  (arrange-redirects)
                  (remove-nil-values))))

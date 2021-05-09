@@ -5,7 +5,8 @@
 
 (def table-categories
   ["exp"
-   "high-level-character"])
+   "high-level-character"
+   "skills"])
 
 (def tables-routes
   (into ["/tables" {:swagger {:tags ["tables"]}}]

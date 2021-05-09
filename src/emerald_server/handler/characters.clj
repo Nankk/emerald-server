@@ -84,6 +84,15 @@
       (io/copy (b64-codec/decode (.getBytes base64))
                (io/file file-path)))))
 
+(defn copy-image [char-from char-to]
+  (println "copy-image")
+  (let [ext       (get-in char-from [:options :image :extension])
+        path-from (str local-dir "/img/profile/" (char-from :uuid) "." ext)
+        path-to   (str local-dir "/img/profile/" (char-to :uuid) "." ext)]
+    (when (.exists (io/file path-from))
+      (println "Copying " path-from "...")
+      (io/copy (io/file path-from) (io/file path-to)))))
+
 (defn delete-file-if [path]
   (println "delete-file-if")
   (when (.exists (io/file path))
@@ -107,8 +116,9 @@
   (println "characters-add")
   (let [uuid (str (java.util.UUID/randomUUID))]
     (try
-      (save-image body uuid)
-      {:status 200 :body (add-character body uuid)}
+      (let [char-full (add-character body uuid)]
+        (save-image body uuid)
+        {:status 200 :body char-full})
       (catch Exception e
         (let [{{{:keys [extension]} :image} :options} body
               file-path (str local-dir "/img/profile/" uuid "." extension)]
@@ -131,6 +141,15 @@
   (println "id: " id)
   (let [[_ rowidx] (uuid-and-rowidx id)]
     {:status 200 :body (character/character-full (@(@*characters rowidx) :data))}))
+
+(defn character-copy [{{:keys [id]} :path-params}]
+  (println "character-copy [" id "]")
+  (let [[uuid rowidx] (uuid-and-rowidx id)]
+    (let [original    (@(@*characters rowidx) :data)
+          new-uuid    (str (java.util.UUID/randomUUID))
+          copied-full (add-character original new-uuid)]
+      (copy-image original copied-full)
+      {:status 200 :body copied-full})))
 
 (defn character-update [{{:keys [id]} :path-params {:keys [body]} :parameters}]
   (println "character-update")
@@ -187,6 +206,10 @@
             :parameters {:path {:id ::character/id}}
             :responses {200 {:body ::character/character}}
             :handler   character-show}
+      :post {:summary   "Copy the existing character specified by id."
+             :parameters {:path {:id ::character/id}}
+             :responses {200 {:body ::character/character}}
+             :handler   character-copy}
       :put {:summary   "Update a character specified by id."
             :parameters {:path {:id ::character/id}
                          :body :character.core/character}
@@ -201,4 +224,5 @@
     ["/image"
      {:get {:summary "Downloads a profile image file."
             :parameters {:path {:id ::character/id}}
-            :handler character-image-show}}]]])
+            :handler character-image-show}}]
+    ]])

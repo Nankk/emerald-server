@@ -72,12 +72,12 @@
 (defn level-sum
   "Returns summation of levels specified by category of character."
   [character category]
-  (reduce + (map :level (filter #(get-in abilities [(% :name) category]) (character :abilities)))))
+  (reduce + (vals (filter #(get-in abilities [(% 0) category]) (character :abilities)))))
 
 (defn level-if
   "Returns ability level of character specified by ability-name.
   Returns nil if the character does not have it."
   [character ability-name]
-  (some-> (filter #(= (% :name) ability-name) (character :abilities))
+  (some-> (filter #(= (% 0) ability-name) (character :abilities))
           (first)
-          (:level)))
+          (nth ,, 1)))
