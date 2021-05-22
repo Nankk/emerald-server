@@ -97,9 +97,9 @@
                           :opt-un [::buffs])))
 
 (do ;; Parameters (core & full-specification)
-  (s/def :parameters.base/physique spec/nat-int?)
-  (s/def :parameters.base/technique spec/nat-int?)
-  (s/def :parameters.base/mind spec/nat-int?)
+  (s/def :parameters.base/physique spec/pos-int?)
+  (s/def :parameters.base/technique spec/pos-int?)
+  (s/def :parameters.base/mind spec/pos-int?)
   (s/def :parameters/base (s/keys :req-un [:parameters.base/physique
                                            :parameters.base/technique
                                            :parameters.base/mind]))
