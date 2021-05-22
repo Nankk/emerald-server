@@ -123,7 +123,8 @@
         (let [{{{:keys [extension]} :image} :options} body
               file-path (str local-dir "/img/profile/" uuid "." extension)]
           (delete-file-if file-path))
-        (throw (Exception. e))))))
+        (println "Returning error message...")
+        {:status 500 :body (Throwable->map e)}))))
 
 (defn characters-summary [_]
   (println "characters-summary")
