@@ -14,6 +14,7 @@ services:
             - DATABASE_HOST=localhost
     server:
         image: nankk/emerald-server
+        build: .
         container_name: emerald-server
         ports:
             - 53000:3000
