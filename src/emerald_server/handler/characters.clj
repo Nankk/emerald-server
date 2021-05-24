@@ -61,17 +61,18 @@
 (defn add-character
   "Register character data to duratom database and returns {:uuid 'uuid :idx 'int}.
   This data can be used to access the registered data."
-  [character uuid]
+  [char-raw uuid]
   (println "add-character")
-  (let [rowidx (next-row-available *characters)
-        data!  (create-character-duratom uuid rowidx
-                                         (if (get-in character [:options :image :base64])
-                                           (update-in character [:options :image] dissoc :base64)
-                                           character))
-        char   (character/character-full (:data @data!))]
+  (let [rowidx     (next-row-available *characters)
+        char-nopic (if (get-in char-raw [:options :image :base64])
+                     (update-in char-raw [:options :image] dissoc :base64)
+                     char-raw)
+        ;; character-full must be called here: Spec check before registration
+        char-full  (character/character-full (assoc char-nopic :uuid uuid :idx rowidx))
+        data!      (create-character-duratom uuid rowidx char-nopic)]
     (swap! *uuid->rowidx #(assoc % uuid rowidx))
     (swap! *characters #(assoc % rowidx data!))
-    char))
+    char-full))
 
 (def local-dir (str (env :home) "/.emerald"))
 
