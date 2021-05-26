@@ -194,7 +194,7 @@
     {:get {:summary   "Returns all characters."
            :responses {200 {:body ::character/characters}}
            :handler   characters-show}
-     :post {:summary   "Register a character and returns its id."
+     :post {:summary   "Registers a character and returns full data with index and uuid."
             :parameters {:body :character.core/character}
             :responses {200 {:body ::character/character}}
             :handler   characters-add}}]
@@ -208,17 +208,17 @@
             :parameters {:path {:id ::character/id}}
             :responses {200 {:body ::character/character}}
             :handler   character-show}
-      :post {:summary   "Copy the existing character specified by id."
+      :post {:summary   "Copies the existing character specified by id and returns full data."
              :parameters {:path {:id ::character/id}}
              :responses {200 {:body ::character/character}}
              :handler   character-copy}
-      :put {:summary   "Update a character specified by id."
+      :put {:summary   "Updates a character specified by id and returns full data."
             :parameters {:path {:id ::character/id}
                          :body :character.core/character}
             :responses {200 {:body ::character/character}
                         400 {:body (s/keys :req-un [::character/errors])}}
             :handler   character-update}
-      :delete {:summary   "Delete a character specified by id."
+      :delete {:summary   "Deletes a character specified by id."
                :parameters {:path {:id ::character/id}}
                :responses {200 {:body (s/keys :req-un [::character/message])}
                            400 {:body (s/keys :req-un [::character/errors])}}
