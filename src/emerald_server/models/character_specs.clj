@@ -19,7 +19,7 @@
                                    :opt-un [:personality.name/middle
                                             :personality.name/last]))
   (s/def :personality/age spec/nat-int?)
-  (s/def :personality/gender #{"male" "female" "lgbttiqq2sa"})
+  (s/def :personality/gender spec/string?)
   (s/def :personality.species/name spec/string?)
   (s/def :personality.species/origin spec/string?) ; For nightmare
   (s/def :personality.species/head spec/string?) ; For lycant
