@@ -200,10 +200,12 @@
 (do ;; Items
   (s/def :items.item/uuid spec/string?)
   (s/def :items.item/name spec/string?)
+  (s/def :items.item/description spec/string?)
   (s/def :items.item/count spec/pos-int?)
   (s/def :items/item (s/keys :req-un [:items.item/uuid
                                       :items.item/name
-                                      :items.item/count]))
+                                      :items.item/count]
+                             :opt-un [:items.item/description]))
   (s/def ::items (s/map-of :items.item/uuid :items/item)))
 
 (do ;; Equipments

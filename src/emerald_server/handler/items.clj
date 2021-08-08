@@ -24,6 +24,20 @@
               :handler (fn [_]
                          {:status 200
                           :body   (get @db/*data (keyword category))})}}]
+      ;; May not be needed...
+      ["/summary"
+       {:get {:summary (str "Returns " category " data summary.")
+              :handler (fn [_]
+                         {:status 200
+                          :body (let [whole (get @db/*data (keyword category))]
+                                  (into {} (for [[k items] whole]
+                                             [k (for [item items]
+                                                  (select-keys item [:name
+                                                                     :uuid
+                                                                     :price
+                                                                     :category
+                                                                     :rank
+                                                                     :description]))])))})}}]
       ["/:id"
        {:get {:summary (str "Returns a single data from " category)
               :parameters {:path {:id spec/string?}}
