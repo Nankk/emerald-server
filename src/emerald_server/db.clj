@@ -103,6 +103,7 @@
    "cbb/infancy"
    "cbb/name"
    "items"
+   "magics"
    "equipments"
    "costs"
    "tables"])

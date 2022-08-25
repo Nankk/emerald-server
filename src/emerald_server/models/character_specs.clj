@@ -301,10 +301,10 @@
                                   :image/width
                                   :image/height]
                          :opt-un [:image/base64]))
-  (s/def :notes/title spec/string?)
-  (s/def :notes/body spec/string?)
-  (s/def ::notes (s/keys :req-un [:notes/title
-                                  :notes/body]))
+  (s/def :notes.note/title spec/string?)
+  (s/def :notes.note/body spec/string?)
+  (s/def :notes/note (s/keys :req-un [:notes/title :notes/body]))
+  (s/def ::notes (s/coll-of :notes/note))
   (s/def :nature/abstract spec/string?)
   (s/def :nature/detail spec/string?)
   (s/def :nature/born (s/keys :req-un [:nature/abstract :nature/detail]))
