@@ -16,3 +16,5 @@ private/
 ref/
 bak/
 resources/img/
+# ルールブック由来のデータ（著作物のため非同梱）
+*.xlsx
